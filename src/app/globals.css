@@ -1,0 +1,437 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ────────────────────────────────────────────────
+   Şimşek Mobilya & Mimarlık — Design Tokens
+   Brand: editorial black + soft ivory + signature red.
+   28-year heritage, custom furniture craftsmanship,
+   architectural restraint. Red used as a punctuation
+   mark, never as a wash.
+
+   :root holds LIGHT tokens (default).
+   .dark overrides for the studio-night palette.
+   ──────────────────────────────────────────────── */
+
+:root {
+  --radius: 0.5rem;
+
+  /* LIGHT — Ivory paper, smoked ink */
+  --surface-0: oklch(0.984 0.003 90);   /* page — soft white #FAFAF7 */
+  --surface-1: oklch(0.965 0.004 90);   /* card */
+  --surface-2: oklch(0.935 0.005 88);   /* card on card / inputs */
+  --surface-3: oklch(0.895 0.006 86);   /* hover, accents */
+
+  /* Ink — true black for editorial weight */
+  --ink: oklch(0.12 0 0);                /* primary text — near black #1a1a1a */
+  --ink-muted: oklch(0.42 0.005 0);      /* secondary text — AA on ivory */
+  --ink-faint: oklch(0.58 0.005 0);      /* tertiary, eyebrows */
+  --ink-whisper: oklch(0.74 0.005 0);    /* dividers, sublabels */
+
+  /* Brand red — Şimşek signature */
+  --brand: oklch(0.582 0.218 27);        /* #ED1C24 */
+  --brand-deep: oklch(0.50 0.22 27);     /* hover/pressed */
+  --brand-soft: oklch(0.66 0.18 27);     /* lighter accents */
+  --brand-tint: oklch(0.96 0.04 27);     /* subtle wash backgrounds */
+
+  /* Map tokens */
+  --background: var(--surface-0);
+  --foreground: var(--ink);
+  --card: var(--surface-1);
+  --card-foreground: var(--ink);
+  --popover: var(--surface-1);
+  --popover-foreground: var(--ink);
+
+  --primary: var(--ink);
+  --primary-foreground: var(--surface-0);
+
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--ink);
+
+  --muted: var(--surface-2);
+  --muted-foreground: var(--ink-muted);
+
+  --accent: var(--brand);
+  --accent-foreground: var(--surface-0);
+
+  --destructive: oklch(0.55 0.18 25);
+  --destructive-foreground: var(--surface-0);
+
+  --success: oklch(0.55 0.13 150);
+  --warning: oklch(0.72 0.16 75);
+
+  --border: oklch(0.85 0.005 0 / 0.6);
+  --border-strong: oklch(0.70 0.005 0 / 0.7);
+  --input: var(--surface-2);
+  --ring: oklch(0.582 0.218 27 / 0.4);
+
+  /* Charts */
+  --chart-1: var(--brand);
+  --chart-2: var(--ink);
+  --chart-3: oklch(0.55 0.005 0);
+  --chart-4: oklch(0.72 0.01 0);
+  --chart-5: oklch(0.86 0.005 0);
+}
+
+.dark {
+  /* DARK — Studio at midnight */
+  --surface-0: oklch(0.08 0 0);          /* page — near black */
+  --surface-1: oklch(0.115 0 0);         /* card */
+  --surface-2: oklch(0.155 0 0);         /* card on card / inputs */
+  --surface-3: oklch(0.20 0 0);          /* hover */
+
+  --ink: oklch(0.97 0.003 90);           /* primary text — soft white */
+  --ink-muted: oklch(0.74 0.004 90);     /* secondary */
+  --ink-faint: oklch(0.55 0.005 90);     /* tertiary, eyebrows */
+  --ink-whisper: oklch(0.38 0.005 90);   /* dividers, sublabels */
+
+  /* Brand red — slightly lifted for AA on dark */
+  --brand: oklch(0.66 0.22 27);
+  --brand-deep: oklch(0.55 0.21 27);
+  --brand-soft: oklch(0.74 0.16 27);
+  --brand-tint: oklch(0.20 0.08 27);
+
+  --background: var(--surface-0);
+  --foreground: var(--ink);
+  --card: var(--surface-1);
+  --card-foreground: var(--ink);
+  --popover: var(--surface-2);
+  --popover-foreground: var(--ink);
+
+  --primary: var(--ink);
+  --primary-foreground: var(--surface-0);
+
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--ink);
+
+  --muted: var(--surface-2);
+  --muted-foreground: var(--ink-muted);
+
+  --accent: var(--brand);
+  --accent-foreground: var(--surface-0);
+
+  --destructive: oklch(0.62 0.18 25);
+  --destructive-foreground: var(--ink);
+
+  --success: oklch(0.65 0.12 150);
+  --warning: oklch(0.78 0.13 75);
+
+  --border: oklch(0.30 0 0 / 0.6);
+  --border-strong: oklch(0.42 0 0 / 0.75);
+  --input: var(--surface-2);
+  --ring: oklch(0.66 0.22 27 / 0.45);
+
+  --chart-1: var(--brand);
+  --chart-2: var(--ink);
+  --chart-3: oklch(0.62 0.005 0);
+  --chart-4: oklch(0.46 0.005 0);
+  --chart-5: oklch(0.32 0.005 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-ink-whisper: var(--ink-whisper);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-tint: var(--brand-tint);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, SFMono-Regular, monospace;
+
+  --radius-sm: calc(var(--radius) - 3px);
+  --radius-md: calc(var(--radius) - 1px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+}
+
+/* Architectural shadows — minimal, intentional */
+:root {
+  --shadow-hairline: inset 0 0 0 1px oklch(0.78 0.005 0 / 0.55);
+  --shadow-soft:
+    inset 0 0 0 1px oklch(0.82 0.005 0 / 0.55),
+    0 4px 16px -8px oklch(0.10 0 0 / 0.10);
+  --shadow-elevated:
+    inset 0 0 0 1px oklch(0.78 0.005 0 / 0.55),
+    0 24px 60px -24px oklch(0.10 0 0 / 0.18);
+  --shadow-brand:
+    0 6px 20px -8px oklch(0.582 0.218 27 / 0.30);
+}
+
+.dark {
+  --shadow-hairline: inset 0 0 0 1px oklch(0.30 0 0 / 0.6);
+  --shadow-soft:
+    inset 0 0 0 1px oklch(0.30 0 0 / 0.55),
+    0 4px 16px -8px oklch(0 0 0 / 0.6);
+  --shadow-elevated:
+    inset 0 0 0 1px oklch(0.30 0 0 / 0.65),
+    0 24px 60px -24px oklch(0 0 0 / 0.85);
+  --shadow-brand:
+    0 6px 20px -8px oklch(0.66 0.22 27 / 0.40);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: light dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01", "ss03";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar — minimal, brand-aware */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.78 0.005 0 / 0.5);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: oklch(0.62 0.005 0 / 0.7); background-clip: padding-box; border: 2px solid transparent; }
+  .dark ::-webkit-scrollbar-thumb { background: oklch(0.28 0 0 / 0.7); background-clip: padding-box; border: 2px solid transparent; }
+  .dark ::-webkit-scrollbar-thumb:hover { background: oklch(0.40 0 0 / 0.85); background-clip: padding-box; border: 2px solid transparent; }
+
+  ::selection {
+    background: oklch(0.582 0.218 27 / 0.25);
+    color: var(--ink);
+  }
+  .dark ::selection {
+    background: oklch(0.66 0.22 27 / 0.30);
+    color: var(--ink);
+  }
+
+  html, body {
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  /* Heading defaults — editorial weight */
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  /* View Transitions — soft cross-fade on theme/page swap */
+  @media (prefers-reduced-motion: no-preference) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 280ms;
+      animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+  }
+}
+
+@layer utilities {
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+
+  /* Editorial vignette — adds atmosphere to hero areas */
+  .bg-editorial {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.99 0.005 90 / 0.7) 0%, transparent 60%),
+      radial-gradient(ellipse 100% 80% at 50% 100%, oklch(0.95 0.005 90 / 0.5) 0%, transparent 70%),
+      var(--surface-0);
+  }
+  .dark .bg-editorial {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.14 0 0 / 0.55) 0%, transparent 60%),
+      radial-gradient(ellipse 100% 80% at 50% 100%, oklch(0.10 0 0 / 0.7) 0%, transparent 70%),
+      var(--surface-0);
+  }
+
+  /* Subtle paper grain */
+  .bg-grain {
+    background-image: radial-gradient(oklch(0.10 0 0 / 0.04) 1px, transparent 1px);
+    background-size: 3px 3px;
+  }
+  .dark .bg-grain {
+    background-image: radial-gradient(oklch(1 0 0 / 0.018) 1px, transparent 1px);
+  }
+
+  /* Display headings — Fraunces SOFT axis active */
+  .text-display {
+    font-family: var(--font-display);
+    font-variation-settings: "SOFT" 50, "opsz" 144;
+    letter-spacing: -0.035em;
+    line-height: 0.95;
+  }
+
+  /* Eyebrow — uppercase label */
+  .eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--brand);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .eyebrow::before {
+    content: "";
+    display: inline-block;
+    width: 1.5rem;
+    height: 1px;
+    background: var(--brand);
+  }
+
+  /* Strong divider for editorial sections */
+  .divider {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      oklch(0.70 0.005 0 / 0.5) 12%,
+      oklch(0.70 0.005 0 / 0.5) 88%,
+      transparent
+    );
+  }
+  .dark .divider {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      oklch(0.32 0 0 / 0.5) 12%,
+      oklch(0.32 0 0 / 0.5) 88%,
+      transparent
+    );
+  }
+
+  /* Inline brand mark — used for accent slivers */
+  .brand-bar {
+    display: inline-block;
+    width: 2.25rem;
+    height: 2px;
+    background: var(--brand);
+    vertical-align: middle;
+  }
+
+  /* Container with editorial gutters */
+  .container-editorial {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+    max-width: 90rem;
+  }
+
+  /* Section padding rhythm */
+  .section-y {
+    padding-block: clamp(4rem, 10vw, 8rem);
+  }
+  .section-y-tight {
+    padding-block: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  /* Hover shine for cards */
+  .card-hover {
+    transition: transform 480ms cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 480ms ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Ken Burns slow zoom — used on hero imagery */
+  @keyframes kenburns {
+    0%   { transform: scale(1.04) translate3d(0, 0, 0); }
+    100% { transform: scale(1.12) translate3d(-1%, -1%, 0); }
+  }
+  .animate-kenburns {
+    animation: kenburns 18s ease-in-out infinite alternate;
+  }
+
+  /* Marquee for testimonials/logo strip */
+  @keyframes marquee {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 32s linear infinite;
+  }
+
+  /* Reveal — IntersectionObserver-driven slide-up. Transform-only so the
+     content is never hidden from screen readers, search engines, or
+     paginated screenshot tools (Playwright fullPage). */
+  .reveal {
+    transform: translateY(20px);
+    transition: transform 800ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
+  }
+  .reveal.in-view {
+    transform: translateY(0);
+  }
+
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pl-safe { padding-left: env(safe-area-inset-left); }
+  .pr-safe { padding-right: env(safe-area-inset-right); }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-kenburns,
+    .animate-marquee,
+    .reveal {
+      animation: none !important;
+      transition: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+}
