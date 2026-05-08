@@ -115,10 +115,18 @@ export function SiteFooter({ locale }: SiteFooterProps) {
         <p>
           © {year} {SITE.legalName}. {t("rights")}
         </p>
-        <p className="flex items-center gap-1.5">
-          <span className="brand-bar" aria-hidden />
-          {tNav("language")}: {isTr ? "Türkçe" : "English"} · {t("credit")}
-        </p>
+        <div className="flex items-center gap-4 flex-wrap">
+          <Link
+            href="/privacy"
+            className="hover:text-brand transition-colors"
+          >
+            {isTr ? "KVKK Aydınlatma Metni" : "Privacy Notice"}
+          </Link>
+          <p className="flex items-center gap-1.5">
+            <span className="brand-bar" aria-hidden />
+            {tNav("language")}: {isTr ? "Türkçe" : "English"} · {t("credit")}
+          </p>
+        </div>
       </div>
     </footer>
   );

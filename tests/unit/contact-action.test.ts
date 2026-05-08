@@ -8,9 +8,15 @@ describe("contactFormSchema", () => {
     phone: "+905326463919",
     service: "custom" as const,
     message: "Salonumuz için bir mobilya programı düşünüyoruz.",
+    consent: true as const,
     locale: "tr" as const,
     website: "",
   };
+
+  it("rejects when consent is false (KVKK guard)", () => {
+    const result = contactFormSchema.safeParse({ ...valid, consent: false });
+    expect(result.success).toBe(false);
+  });
 
   it("accepts a complete payload", () => {
     const result = contactFormSchema.safeParse(valid);

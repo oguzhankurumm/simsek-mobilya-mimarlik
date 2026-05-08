@@ -303,6 +303,157 @@ export const PROJECTS: Project[] = [
     ],
     featured: true,
   },
+  {
+    slug: "avrupa-konutlari-tem-mutfak",
+    category: "kitchen",
+    year: 2024,
+    date: "2024-11-27",
+    location: "Avrupa Konutları TEM, İstanbul",
+    igUrl: "https://www.instagram.com/p/DC421ELuN9H/",
+    titleTr: "Avrupa Konutları TEM — Mutfak",
+    titleEn: "Avrupa Konutları TEM — Kitchen",
+    summaryTr:
+      "Bir çalışmamız daha — Avrupa Konutları TEM'de açık-kapalı geçişli, klasik panel mutfak.",
+    summaryEn:
+      "Another project — a classic-panel open-plan kitchen at Avrupa Konutları TEM.",
+    storyTr:
+      "Salondan sürme cam kapıyla geçilen mutfağa açık gri klasik panel kabin uyguladık. Calacatta mermer tezgah ve arka panel, davlumbazın iki yanında simetrik üst dolaplar, ön tarafta krom kase tutamaklar yaptık. Yan tarafta yemek yeme alanı için ahşap-rattan iskemleler ve yuvarlak mermer masa müşteriye önerildi.",
+    storyEn:
+      "We built a soft-grey classic-panel kitchen, accessed through sliding glass doors from the salon. Calacatta marble countertop and backsplash, symmetrical upper cabinets flanking the hood, chrome cup pulls in front. The dining nook with wood-rattan chairs and a round marble table was specified for the client.",
+    scopeTr: [
+      "Klasik panel mutfak — açık gri lake",
+      "Calacatta mermer tezgah + arka panel",
+      "Davlumbaz simetrik üst dolap kurgusu",
+      "Krom kase (cup pull) tutamaklar",
+    ],
+    scopeEn: [
+      "Classic-panel kitchen — soft-grey lacquer",
+      "Calacatta marble counter + splash",
+      "Symmetrical upper cabinets around the hood",
+      "Chrome cup pulls",
+    ],
+    materialsTr: [
+      "Açık gri mat lake",
+      "Calacatta mermer",
+      "Krom kase tutamak",
+      "Mat porselen zemin",
+    ],
+    materialsEn: [
+      "Soft-grey matte lacquer",
+      "Calacatta marble",
+      "Chrome cup pulls",
+      "Matte porcelain floor",
+    ],
+    cover: {
+      src: "/work/avrupa-konutlari-mutfak/01-mutfak-genel.jpg",
+      alt: "TEM Avrupa Konutları mutfak — açık gri klasik panel kabin, calacatta mermer tezgah, sürme cam kapı",
+      ...PORTRAIT,
+    },
+    gallery: [
+      {
+        src: "/work/avrupa-konutlari-mutfak/02-mermer-tezgah.jpg",
+        alt: "Mutfak detay — calacatta mermer tezgah, krom kase tutamak",
+        ...PORTRAIT,
+      },
+      {
+        src: "/work/avrupa-konutlari-mutfak/03-detay-1.jpg",
+        alt: "Mutfak detay — davlumbaz çevresi, üst dolap simetrisi",
+        ...PORTRAIT,
+      },
+      {
+        src: "/work/avrupa-konutlari-mutfak/04-detay-2.jpg",
+        alt: "Mutfak detay — kabin gövdesi ve mermer tezgah birleşimi",
+        ...PORTRAIT,
+      },
+      {
+        src: "/work/avrupa-konutlari-mutfak/05-detay-3.jpg",
+        alt: "Mutfak detay — açık raf ve klasik panel kapak",
+        ...PORTRAIT,
+      },
+      {
+        src: "/work/avrupa-konutlari-mutfak/06-detay-4.jpg",
+        alt: "Mutfak detay — tezgah ve evye birleşimi",
+        ...PORTRAIT,
+      },
+      {
+        src: "/work/avrupa-konutlari-mutfak/07-detay-5.jpg",
+        alt: "Mutfak detay — alt çekmece programı",
+        ...PORTRAIT,
+      },
+      {
+        src: "/work/avrupa-konutlari-mutfak/08-detay-6.jpg",
+        alt: "Mutfak detay — sürme cam kapıdan görünüm",
+        ...PORTRAIT,
+      },
+    ],
+  },
+  {
+    slug: "tem-2-1-daire-mutfak-yenileme",
+    category: "kitchen",
+    year: 2025,
+    date: "2025-04-24",
+    location: "Avrupa Konutları TEM, İstanbul",
+    igUrl: "https://www.instagram.com/p/DI1o87yIZPJ/",
+    titleTr: "TEM 2+1 Daire — Mutfak Yenileme",
+    titleEn: "TEM 2+1 Apartment — Kitchen Refresh",
+    summaryTr:
+      "2+1 dairenin mevcut mutfak dolaplarının kapaklarını ve tezgahını değiştirdik.",
+    summaryEn:
+      "Replaced the doors and countertops of the existing kitchen cabinetry in a 2+1 apartment.",
+    storyTr:
+      "Daire sahibi mevcut karkasla devam etmek istedi — sadece kapaklar ve tezgah değişti. Beyaz parlak lake kapaklar takıldı, ahşap görünümlü laminat tezgah uygulandı. İki günde söküm + montaj, mutfak aynı hafta kullanıma hazır.",
+    storyEn:
+      "The owner wanted to keep the existing carcasses — only doors and countertops were swapped. We installed glossy white lacquer fronts and a wood-grain laminate counter. Tear-out and install in two days; the kitchen was back in service the same week.",
+    scopeTr: [
+      "Mevcut karkas üzerine kapak değişimi",
+      "Tezgah değişimi (laminat)",
+      "Bar kenarı yeni tezgah uzantısı",
+      "2 günde teslim",
+    ],
+    scopeEn: [
+      "Door swap on existing carcasses",
+      "Countertop replacement (laminate)",
+      "New bar-counter extension",
+      "Delivered in 2 days",
+    ],
+    materialsTr: [
+      "Beyaz parlak lake",
+      "Ahşap görünümlü laminat",
+      "Krom donanım",
+    ],
+    materialsEn: [
+      "Glossy white lacquer",
+      "Wood-grain laminate",
+      "Chrome hardware",
+    ],
+    cover: {
+      src: "/work/avrupa-konutlari-2-1-yenileme/01-mutfak-genel.jpg",
+      alt: "2+1 daire mutfak — beyaz parlak lake kapaklar, ahşap görünümlü laminat tezgah, ada uzantısı",
+      ...PORTRAIT,
+    },
+    gallery: [
+      {
+        src: "/work/avrupa-konutlari-2-1-yenileme/02-tezgah.jpg",
+        alt: "Mutfak detay — bar kenarı tezgah uzantısı",
+        ...PORTRAIT,
+      },
+      {
+        src: "/work/avrupa-konutlari-2-1-yenileme/03-detay-1.jpg",
+        alt: "Mutfak detay — kapak ve tezgah birleşimi",
+        ...PORTRAIT,
+      },
+      {
+        src: "/work/avrupa-konutlari-2-1-yenileme/04-detay-2.jpg",
+        alt: "Mutfak detay — alt dolap çekmeceleri",
+        ...PORTRAIT,
+      },
+      {
+        src: "/work/avrupa-konutlari-2-1-yenileme/05-detay-3.jpg",
+        alt: "Mutfak detay — yan görünüm",
+        ...PORTRAIT,
+      },
+    ],
+  },
 ];
 
 export const FEATURED_PROJECTS = PROJECTS.filter((p) => p.featured);

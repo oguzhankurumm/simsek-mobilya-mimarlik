@@ -6,6 +6,7 @@ import { ServicesPreview } from "@/components/sections/services-preview";
 import { Process } from "@/components/sections/process";
 import { Stats } from "@/components/sections/stats";
 import { InstagramStrip } from "@/components/sections/instagram-strip";
+import { Testimonials } from "@/components/sections/testimonials";
 import { ContactCta } from "@/components/sections/contact-cta";
 import { JsonLd } from "@/components/atoms/json-ld";
 import { CONTACT, SITE, SOCIAL } from "@/config/site";
@@ -68,6 +69,7 @@ export default async function HomePage({ params }: PageProps) {
       <Manifesto />
       <FeaturedProjects locale={locale} />
       <Stats locale={locale} />
+      <Testimonials locale={locale} />
       <ServicesPreview locale={locale} />
       <Process locale={locale} />
       <InstagramStrip locale={locale} />

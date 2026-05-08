@@ -42,6 +42,15 @@ export const CONTACT = {
   },
 } as const;
 
+/**
+ * WhatsApp click-to-chat — pre-filled mesaj sürtünmeyi azaltıyor:
+ * müşteri sayfayı görüp tıkladığında ne yazacağını düşünmek yerine
+ * direkt göndermeye odaklanıyor.
+ */
+const WA_DEFAULT_TEXT = encodeURIComponent(
+  "Merhaba, simsekmobilya.com sitenizden ulaşıyorum. Projem için bilgi almak istiyorum."
+);
+
 export const SOCIAL = {
   instagram: {
     handle: "simsekmobilya_ist",
@@ -49,7 +58,7 @@ export const SOCIAL = {
     label: "Instagram",
   },
   whatsapp: {
-    url: `https://wa.me/${CONTACT.whatsapp.replace("+", "")}`,
+    url: `https://wa.me/${CONTACT.whatsapp.replace("+", "")}?text=${WA_DEFAULT_TEXT}`,
     label: "WhatsApp",
   },
 } as const;

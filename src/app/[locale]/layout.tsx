@@ -5,6 +5,7 @@ import { routing, type Locale } from "@/i18n/routing";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { StickyContactBar } from "@/components/layout/sticky-contact-bar";
+import { CookieBanner } from "@/components/atoms/cookie-banner";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -30,6 +31,7 @@ export default async function LocaleLayout({
         <SiteFooter locale={locale as Locale} />
       </div>
       <StickyContactBar />
+      <CookieBanner />
     </NextIntlClientProvider>
   );
 }

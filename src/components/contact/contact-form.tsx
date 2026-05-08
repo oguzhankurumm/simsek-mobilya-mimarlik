@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Link } from "@/i18n/navigation";
 import { contactFormSchema, type ContactFormInput } from "@/lib/contact-schema";
 import { submitContactAction } from "@/server/contact-action";
 import type { Locale } from "@/i18n/routing";
@@ -47,6 +48,7 @@ export function ContactForm({ locale }: ContactFormProps) {
       phone: "",
       service: "custom",
       message: "",
+      consent: false as unknown as true,
       website: "",
       locale,
     },
@@ -142,6 +144,54 @@ export function ContactForm({ locale }: ContactFormProps) {
           Website
           <input type="text" tabIndex={-1} autoComplete="off" {...register("website")} />
         </label>
+      </div>
+
+      {/* KVKK consent — açık rıza zorunlu (form gönderilemez yoksa) */}
+      <div className="space-y-1.5 pt-1">
+        <label className="flex items-start gap-3 text-sm text-ink-muted leading-relaxed cursor-pointer">
+          <input
+            type="checkbox"
+            {...register("consent")}
+            className={cn(
+              "mt-1 h-4 w-4 shrink-0 rounded border-border accent-brand cursor-pointer",
+              errors.consent && "ring-2 ring-destructive"
+            )}
+          />
+          <span>
+            {locale === "tr" ? (
+              <>
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  className="text-ink underline-offset-2 hover:underline hover:text-brand"
+                >
+                  KVKK Aydınlatma Metni
+                </Link>
+                {"'ni okudum, kişisel verilerimin bu kapsamda işlenmesine açık rıza veriyorum."}
+              </>
+            ) : (
+              <>
+                {"I have read the "}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  className="text-ink underline-offset-2 hover:underline hover:text-brand"
+                >
+                  KVKK / Privacy Notice
+                </Link>
+                {" and consent to the processing of my personal data."}
+              </>
+            )}
+          </span>
+        </label>
+        {errors.consent ? (
+          <p className="flex items-center gap-1.5 text-xs text-destructive ml-7">
+            <AlertCircle className="h-3 w-3" />
+            {locale === "tr"
+              ? "Devam etmek için onay vermeniz gerekiyor."
+              : "Please confirm consent to continue."}
+          </p>
+        ) : null}
       </div>
 
       <Button

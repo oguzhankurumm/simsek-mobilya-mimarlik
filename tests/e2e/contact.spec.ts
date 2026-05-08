@@ -23,9 +23,22 @@ test.describe("İletişim sayfası", () => {
     await page
       .getByLabel(/Projenizi anlatın/)
       .fill("Salonumuz için 28 m² özel oturma grubu düşünüyoruz. Detayları konuşalım.");
+    // KVKK consent kutusu zorunlu
+    await page.getByRole("checkbox").check();
     await page.getByRole("button", { name: /^mesajı gönder$/i }).click();
     await expect(page.getByRole("heading", { name: /aldık, teşekkürler/i })).toBeVisible({
       timeout: 15_000,
     });
+  });
+
+  test("KVKK onayı vermeden form gönderilemez", async ({ page }) => {
+    await page.goto("/iletisim");
+    await page.getByLabel("Adınız Soyadınız").fill("Onay Yok");
+    await page.getByLabel(/^E-posta$/).fill("a@b.com");
+    await page.getByLabel("Telefon").fill("+905551112233");
+    await page.getByLabel(/Projenizi anlatın/).fill("Mesaj içeriği yeterince uzun.");
+    // checkbox işaretlenmiyor
+    await page.getByRole("button", { name: /^mesajı gönder$/i }).click();
+    await expect(page.getByText(/onay vermeniz/i)).toBeVisible();
   });
 });

@@ -6,6 +6,8 @@ export const contactFormSchema = z.object({
   phone: z.string().min(7, "phoneInvalid"),
   service: z.enum(["custom", "architectural", "renovation", "consultancy", "other"]),
   message: z.string().min(10, "messageMin").max(4000),
+  // KVKK / GDPR — kişisel verilerin işlenmesine açık rıza zorunlu.
+  consent: z.literal(true, { error: "consentRequired" }),
   // Honeypot — submissions with non-empty website are silently ignored.
   website: z.string().max(0),
   locale: z.enum(["tr", "en"]),
