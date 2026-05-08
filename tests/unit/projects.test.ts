@@ -8,8 +8,8 @@ import {
 } from "@/content/projects";
 
 describe("projects content", () => {
-  it("has at least 8 projects", () => {
-    expect(PROJECTS.length).toBeGreaterThanOrEqual(8);
+  it("has at least 3 atelier projects", () => {
+    expect(PROJECTS.length).toBeGreaterThanOrEqual(3);
   });
 
   it("uses unique slugs", () => {
@@ -23,6 +23,8 @@ describe("projects content", () => {
       expect(p.titleEn.length).toBeGreaterThan(0);
       expect(p.summaryTr.length).toBeGreaterThan(10);
       expect(p.summaryEn.length).toBeGreaterThan(10);
+      expect(p.storyTr.length).toBeGreaterThan(40);
+      expect(p.storyEn.length).toBeGreaterThan(40);
       expect(p.scopeTr.length).toBeGreaterThan(0);
       expect(p.scopeEn.length).toBe(p.scopeTr.length);
       expect(p.materialsTr.length).toBe(p.materialsEn.length);
@@ -43,6 +45,10 @@ describe("projects content", () => {
     }
   });
 
+  it("includes at least 3 featured projects for the home page", () => {
+    expect(FEATURED_PROJECTS.length).toBeGreaterThanOrEqual(3);
+  });
+
   it("getProjectBySlug returns the matching project", () => {
     const first = PROJECTS[0];
     const found = getProjectBySlug(first.slug);
@@ -59,11 +65,22 @@ describe("projects content", () => {
     expect(getNextProject(last.slug).slug).toBe(PROJECTS[0].slug);
   });
 
-  it("uses HTTPS image URLs", () => {
+  it("uses local /work/ image paths (no third-party CDNs)", () => {
     for (const p of PROJECTS) {
-      expect(p.cover.src.startsWith("https://")).toBe(true);
+      expect(p.cover.src.startsWith("/work/")).toBe(true);
       for (const g of p.gallery) {
-        expect(g.src.startsWith("https://")).toBe(true);
+        expect(g.src.startsWith("/work/")).toBe(true);
+      }
+    }
+  });
+
+  it("each cover and gallery image declares width + height", () => {
+    for (const p of PROJECTS) {
+      expect(p.cover.width).toBeGreaterThan(0);
+      expect(p.cover.height).toBeGreaterThan(0);
+      for (const g of p.gallery) {
+        expect(g.width).toBeGreaterThan(0);
+        expect(g.height).toBeGreaterThan(0);
       }
     }
   });

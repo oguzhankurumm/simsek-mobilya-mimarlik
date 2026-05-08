@@ -70,10 +70,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="tr" className={`${inter.variable} ${fraunces.variable}`} suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://images.unsplash.com" />
-      </head>
+      <head />
+
       <body className="min-h-dvh font-sans antialiased">
         <ThemeProvider
           attribute="class"

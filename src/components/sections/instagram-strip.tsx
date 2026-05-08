@@ -15,8 +15,17 @@ interface InstagramStripProps {
 
 export function InstagramStrip({ locale: _locale }: InstagramStripProps) {
   const t = useTranslations("home");
-  // Use first 6 project covers as a standin for IG feed
-  const tiles = PROJECTS.slice(0, 6).map((p) => p.cover);
+
+  // 6 görsel: her projenin cover'ı + en kuvvetli gallery shotları,
+  // farklı kategorilerden bir karma ortaya koyuyor.
+  const tiles = [
+    PROJECTS[0].cover, // Kadıköy salon
+    PROJECTS[2].cover, // Avrupa Konutları lacivert banyo
+    PROJECTS[1].cover, // Çatalca beyaz gardırob
+    PROJECTS[0].gallery[0], // Kadıköy yemek odası
+    PROJECTS[2].gallery[1], // Avrupa Konutları gri banyo
+    PROJECTS[0].gallery[5], // Kadıköy antre
+  ].filter(Boolean);
 
   return (
     <section className="container-editorial section-y">
@@ -53,7 +62,7 @@ export function InstagramStrip({ locale: _locale }: InstagramStripProps) {
               aria-label={tile.alt}
             >
               <Image
-                src={tile.src.replace(/w=\d+/, "w=600").replace(/h=\d+/, "h=600")}
+                src={tile.src}
                 alt=""
                 fill
                 sizes="(max-width: 768px) 50vw, 17vw"
@@ -71,8 +80,8 @@ export function InstagramStrip({ locale: _locale }: InstagramStripProps) {
 
       <p className="mt-6 text-xs text-ink-faint">
         {_locale === "tr"
-          ? "Görseller Şimşek Mobilya & Mimarlık'a aittir. Gerçek paylaşımlar için Instagram'ımızı ziyaret edin."
-          : "Images are illustrative. Visit our Instagram for the live feed."}
+          ? "Görseller @simsekmobilya_ist Instagram hesabımızdan alınmıştır."
+          : "Images sourced from our @simsekmobilya_ist Instagram feed."}
       </p>
     </section>
   );

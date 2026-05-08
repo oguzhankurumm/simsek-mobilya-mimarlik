@@ -22,9 +22,10 @@ const CATEGORY_LABEL: Record<ProjectCategory, { tr: string; en: string }> = {
   living: { tr: "Salon", en: "Living" },
   kitchen: { tr: "Mutfak", en: "Kitchen" },
   bedroom: { tr: "Yatak Odası", en: "Bedroom" },
+  bathroom: { tr: "Banyo", en: "Bathroom" },
   office: { tr: "Ofis", en: "Office" },
   architectural: { tr: "Mimari", en: "Architectural" },
-  renovation: { tr: "Yenileme", en: "Renovation" },
+  renovation: { tr: "Ev Yenileme", en: "Renovation" },
 };
 
 export function ProjectCard({

@@ -19,10 +19,10 @@ interface PageProps {
 
 export const revalidate = 3600;
 
-const ATELIER_IMAGE =
-  "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1800&h=1200&q=85";
-const TEAM_IMAGE =
-  "https://images.unsplash.com/photo-1565538810643-b5bdb714032a?auto=format&fit=crop&w=1200&h=1500&q=85";
+// Atelier ve ekip görselleri için kendi işlerimizden seçilmiş hero shots —
+// editöryel niyeti yansıtan, materyal/zanaat detayını öne çıkaran kareler.
+const ATELIER_IMAGE = "/work/kadikoy-evi/04-mutfak-detay.jpg";
+const TEAM_IMAGE = "/work/avrupa-konutlari/03-banyo-lacivert-1.jpg";
 
 export async function generateMetadata({ params }: PageProps) {
   const { locale } = await params;

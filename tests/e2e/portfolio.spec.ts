@@ -7,7 +7,8 @@ test.describe("Çalışmalarımız akışı", () => {
       page.getByRole("heading", { name: "Çalışmalarımız", level: 1 })
     ).toBeVisible();
 
-    await page.getByRole("button", { name: /^Mutfak/ }).click();
+    // Banyo kategorisinde Avrupa Konutları TEM projesi var
+    await page.getByRole("button", { name: /^Banyo/ }).click();
     await expect(page.locator('a[href^="/calismalar/"]').first()).toBeVisible();
   });
 
@@ -22,11 +23,11 @@ test.describe("Çalışmalarımız akışı", () => {
   });
 
   test("'sonraki çalışma' linki başka projeye yönlendirir", async ({ page }) => {
-    await page.goto("/calismalar/atelye-besiktas");
+    await page.goto("/calismalar/kadikoy-evi");
     const next = page.locator('a[href^="/calismalar/"]').filter({ hasText: /Sonraki|Next/ });
     await expect(next).toBeVisible();
     await next.click();
-    await expect(page).not.toHaveURL(/atelye-besiktas$/);
+    await expect(page).not.toHaveURL(/kadikoy-evi$/);
     await expect(page).toHaveURL(/\/calismalar\/[a-z0-9-]+/);
   });
 });

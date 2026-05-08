@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/atoms/eyebrow";
 import { shimmerDataUrl } from "@/lib/utils";
 
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=2400&h=1600&q=85";
+const HERO_IMAGE = "/work/kadikoy-evi/02-yemek-odasi.jpg";
 
 export function Hero() {
   const t = useTranslations("home");
