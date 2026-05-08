@@ -1,9 +1,10 @@
 /**
  * Şimşek Mobilya & Mimarlık — atelier work.
- * Photographs ve görseller @simsekmobilya_ist Instagram hesabından alınmış,
- * `/public/work/<slug>/` altında local olarak saklanıyor. Yeni proje
- * eklemek için: görselleri `/public/work/<yeni-slug>/` klasörüne koy ve
- * aşağıdaki PROJECTS dizisine yeni bir Project entry'si ekle.
+ *
+ * Görseller @simsekmobilya_ist hesabından alınmış. Açıklamalar atölyenin
+ * Instagram'daki yazma diline (kısa, samimi, direkt — "Bir çalışmamız
+ * daha..", "Şişli'de Müslüm bey'in evini yeniledik", "TEM Avrupa
+ * Konutları 31. blok mutfak dolabı" tarzı) sadık şekilde yazıldı.
  *
  * Her proje /calismalar/[slug] (TR) ve /en/work/[slug] üzerinden yayınlanır.
  */
@@ -66,31 +67,31 @@ export const PROJECTS: Project[] = [
     date: "2026-02-23",
     location: "Kadıköy, İstanbul",
     igUrl: "https://www.instagram.com/p/DVHOjJ2CHPQ/",
-    titleTr: "Kadıköy Evi — Tam Yenileme",
-    titleEn: "Kadıköy Residence — Full Renovation",
+    titleTr: "Kadıköy Evi",
+    titleEn: "Kadıköy Home",
     summaryTr:
-      "Bir aile evinin tüm odaları için kurgulanan ısmarlama program: salondan mutfağa, yatak odasından banyoya tek bir mimari grameri.",
+      "Kadıköy'de bir evi baştan yeniledik. Salondan mutfağa, yatak odasından banyoya — her detayı atölyemizde yaptık.",
     summaryEn:
-      "A bespoke program for every room of a family home: from salon to kitchen, bedroom to bathroom, all under one architectural grammar.",
+      "Renovated a Kadıköy home from end to end. From the salon to the kitchen, the bedroom to the bath — every detail built in our atelier.",
     storyTr:
-      "Kadıköy'deki bu daireyi temelden ele aldık. Salonun ekseninde gömme şömine + 86\" TV ünitesi, iki yanda LED entegre kitaplık nişleri kuruldu. Yemek odasına geçişte üç kemerli vitrinli bar ünitesi yerleştirildi; iç camlı raflar yeşil LED ile ışıklandırıldı. Mutfakta klasik kalıplı krem kabin, masif meşe açık raf serisi ve mermer tezgah üçlüsü dengelendi. Antreyi koridor boyunca aynalı gardırob serisiyle uzattık, tavanı ahşap dilme panellerle yumuşattık. Yatak odasının başucu duvarına LED'li boy ayna + saklı makyaj çekmecesi entegre edildi. Banyoda yeşil dik kalıp seramikle akustik bir köşe oluşturuldu. Tasarım, üretim ve kurulum 12 hafta içinde tamamlandı.",
+      "Salona gömme şömine + 86\" TV ünitesi yaptık, iki yanına LED ışıklı kitaplık nişleri yerleştirdik. Yemek odasına üç kemerli vitrinli bar ünitesi geldi. Mutfağa klasik kalıplı krem kabin, masif meşe açık raf ve mermer tezgah uyguladık. Antre boyunca aynalı gardırob serisi + ahşap dilme tavan kuruldu. Yatak odasının başucuna LED'li boy ayna ile saklı makyaj çekmecesi entegre ettik. Banyoya yeşil dik seramik + yüzer lavabo dolabı. Tasarım, üretim, kurulum hepsi tek elden — 12 haftada teslim ettik.",
     storyEn:
-      "We rebuilt this Kadıköy apartment from the slab. The salon's spine carries an inset fireplace and 86\" TV unit, flanked by LED-lit library niches. A three-arch glass-shelved bar unit anchors the dining room — emerald LED back-lighting echoes the salon's library glow. The kitchen balances classic-moulded cream cabinetry with solid-oak open shelving and a marble countertop. The hallway was lengthened with a mirrored wardrobe run; an oak-slat ceiling softens the corridor. In the master, an LED-edged full-height mirror and a concealed vanity drawer integrate into the headboard wall. A vertical green-tile shower stall completes the en-suite. Design, build, and install delivered in 12 weeks.",
+      "We built an inset fireplace and an 86\" TV unit in the salon, with LED-lit library niches on either side. The dining room got a three-arch glass-shelved bar unit. The kitchen has classic-moulded cream cabinetry, solid-oak open shelves, and a marble countertop. A mirrored wardrobe run plus an oak-slat ceiling lines the entire hallway. In the master we integrated an LED-edged full-height mirror and a hidden vanity drawer above the headboard. The bath has vertical green-tile and a floating vanity. Design, build, and install all in-house — delivered in 12 weeks.",
     scopeTr: [
-      "Salon mimarisi: gömme şömine + TV ünitesi + ışıklı kitaplık",
-      "Yemek odası: kemerli vitrinli bar ünitesi (3 nişli)",
-      "Klasik panel mutfak: kabin + ada + açık masif meşe raf",
-      "Antre/koridor: aynalı gardırob serisi + ahşap panel tavan",
-      "Master yatak odası: gardırob + ışıklı boy ayna + makyaj çekmecesi",
-      "Banyo: yeşil dikey seramik duşa kabin + ısmarlama lavabo dolabı",
+      "Salon — gömme şömine + TV ünitesi + ışıklı kitaplık",
+      "Yemek odası — 3 kemerli vitrinli bar ünitesi",
+      "Mutfak — klasik panel kabin + ada + masif meşe raf",
+      "Antre — aynalı gardırob + ahşap dilme tavan",
+      "Yatak odası — gardırop + ışıklı boy ayna + makyaj çekmecesi",
+      "Banyo — yeşil seramik duşa kabin + lavabo dolabı",
     ],
     scopeEn: [
-      "Salon: inset fireplace + TV unit + LED-lit library",
-      "Dining: three-arch glass-shelved bar unit",
-      "Classic-moulded kitchen: cabinetry + island + solid-oak open shelves",
-      "Hallway: mirrored wardrobe run + oak-slat ceiling",
-      "Master suite: wardrobe + edge-lit mirror + concealed vanity drawer",
-      "Bathroom: vertical green-tile shower + bespoke vanity",
+      "Salon — inset fireplace + TV unit + LED-lit library",
+      "Dining — 3-arch glass-shelved bar unit",
+      "Kitchen — classic panel cabinetry + island + solid-oak shelves",
+      "Hallway — mirrored wardrobe + oak-slat ceiling",
+      "Master suite — wardrobe + edge-lit mirror + vanity drawer",
+      "Bathroom — green-tile shower + floating vanity",
     ],
     materialsTr: [
       "Krem klasik panel",
@@ -169,27 +170,27 @@ export const PROJECTS: Project[] = [
     date: "2025-11-18",
     location: "Çatalca, İstanbul",
     igUrl: "https://www.instagram.com/p/DRNPcrOiLRh/",
-    titleTr: "Çatalca Konağı — Yatak Odası Gardıropları",
-    titleEn: "Çatalca Mansion — Bedroom Wardrobes",
+    titleTr: "Çatalca Konağı",
+    titleEn: "Çatalca Residence",
     summaryTr:
-      "Bir konağın iki yatak odası için tasarlanan, zeminden tavana özel ölçü gardıroplar. Klasik panel detayları, pirinç ve krom donanım.",
+      "Çatalca'daki bir konağın iki yatak odasına ısmarlama gardırop yaptık. Her ikisi de zeminden tavana, özel ölçü.",
     summaryEn:
-      "Floor-to-ceiling, made-to-measure wardrobes for two bedrooms in a Çatalca mansion. Classic-moulded detailing, brass and chrome hardware.",
+      "Built bespoke wardrobes for two bedrooms of a Çatalca residence. Both floor-to-ceiling, made to exact measure.",
     storyTr:
-      "Çatalca'daki konağın iki ayrı yatak odası için ısmarlama gardırob programları kurguladık. İlk odada, parke zemine konuşan saf beyaz mat lake panel kapaklar — her panelin merkezinde klasik çerçeve kalıbı, kapak çiftlerini birleştiren uzun pirinç dikey tutamaklar. İkinci odada ise serin gri tonunda striped (kaval) panel detayı; kaval kalıplar tavana doğru genişleyerek aşağıdaki krom tutamaklara akıyor. Her iki gardırob da atölyemizde modüler bir şekilde üretilip yerinde bütünlendi.",
+      "İlk odaya beyaz mat lake klasik panel gardırop yaptık — her kapağın ortasında çerçeve kalıbı, çiftleri birleştiren uzun pirinç tutamaklar. İkinci odaya gri kaval (fluted) panel uyguladık — krom tutamaklı. İki gardırop da atölyemizde modüler üretildi, yerinde monte edildi.",
     storyEn:
-      "We designed bespoke wardrobe programs for two separate bedrooms in this Çatalca mansion. The first room: pure white matte-lacquer panel doors against the timber floor — each panel framed with a classic profile, paired doors joined by tall vertical brass pulls. The second room: cool-grey fluted panels with vertical reeding that flows up to the ceiling and meets brushed-chrome handles below. Both wardrobes were modularly built in our atelier and finished in place.",
+      "The first room got a white matte-lacquer wardrobe with classic-moulded panel doors and long vertical brass pulls joining the door pairs. The second room got grey fluted (reeded) panels with brushed-chrome handles. Both wardrobes were built modular in our atelier and assembled on site.",
     scopeTr: [
-      "Yatak odası 1 — beyaz lake klasik panel gardırob",
-      "Yatak odası 2 — gri kaval (fluted) panel gardırob",
-      "Saklı iç çekmece + askılık programları",
-      "Pirinç ve krom uzun tutamaklar",
+      "Yatak odası 1 — beyaz lake klasik panel gardırop",
+      "Yatak odası 2 — gri kaval panel gardırop",
+      "İç çekmece + askılık düzenleri",
+      "Pirinç ve krom dikey tutamaklar",
     ],
     scopeEn: [
-      "Bedroom 1 — white-lacquer classic-moulded wardrobe",
+      "Bedroom 1 — white lacquer classic-moulded wardrobe",
       "Bedroom 2 — grey fluted-panel wardrobe",
-      "Concealed drawers + hanging program inside",
-      "Long brass and chrome pull handles",
+      "Internal drawer + hanging programs",
+      "Brass and chrome vertical pulls",
     ],
     materialsTr: [
       "Beyaz mat lake",
@@ -224,27 +225,27 @@ export const PROJECTS: Project[] = [
     date: "2025-05-03",
     location: "Avrupa Konutları TEM, İstanbul",
     igUrl: "https://www.instagram.com/p/DJLbC3SoAul/",
-    titleTr: "Avrupa Konutları TEM — Banyo Programı",
-    titleEn: "Avrupa Konutları TEM — Bathroom Program",
+    titleTr: "TEM Avrupa Konutları — Banyo Dolapları",
+    titleEn: "TEM Avrupa Konutları — Bathroom Vanities",
     summaryTr:
-      "Aynı sitenin sekiz farklı banyosu için kurgulanan ısmarlama dolap serisi. Lacivert, antrasit, açık gri ve klasik beyaz paletler — her birinde aydınlatma, ayna ve donanım üçlüsü dengelenmiş.",
+      "TEM Avrupa Konutları'nda aynı sitenin 8 ayrı dairesine banyo dolabı yaptık. Her biri farklı renk, farklı detay.",
     summaryEn:
-      "A bespoke bathroom-cabinetry series for eight individual bathrooms in the same complex. Navy, anthracite, soft-grey, and classic-white palettes — each balanced on the triad of lighting, mirror, and hardware.",
+      "Built bathroom vanities for 8 different units in the TEM Avrupa Konutları complex. Each one in a different colour, with its own detailing.",
     storyTr:
-      "Avrupa Konutları TEM'de aynı sitenin sekiz farklı dairesinin banyoları için sekiz ayrı banyo dolabı tasarladık. Her banyo bağımsız bir kurgu — lacivert kaval panel + pirinç tutamak; antrasit klasik kalıp; açık gri çerçeveli kapak; kaval cam vitrin + altıgen mozaik. Yuvarlak LED'li aynalar mat seramik duvarlarda yumuşak bir aura yaratırken, vessel lavabolar mermer tezgahta heykelsi durur. Her dolap, ölçüsü alınan banyo için tek tek atölyede üretildi.",
+      "Lacivert kaval + pirinç tutamak, antrasit klasik kalıp, açık gri çerçeveli kapak, beyaz lake panel — her banyoya o banyonun atmosferine uygun bir dolap kurguladık. Yuvarlak LED'li aynalar, vessel lavabolar, mermer tezgahlar. Hepsi ölçüsü tek tek alınıp atölyemizde üretildi, yerinde monte edildi.",
     storyEn:
-      "Eight bathrooms in eight different units across the Avrupa Konutları TEM complex — eight bespoke vanities. Each is its own composition: navy fluted panels with brass pulls; anthracite classic-mould; soft-grey framed doors; reeded-glass cabinets above hexagonal mosaic. Round LED-edged mirrors cast a soft aura on matte porcelain walls, while vessel basins sit sculptural on the marble counters. Every cabinet was built one-by-one in our atelier to the exact measurements of its bathroom.",
+      "Navy fluted panels with brass pulls, anthracite classic mouldings, soft-grey framed doors, white lacquer panels — each bathroom got a vanity tuned to its own atmosphere. Round LED-edged mirrors, vessel basins, marble countertops. Every piece measured one-by-one, built in our atelier, installed on site.",
     scopeTr: [
-      "8 ayrı banyo için bağımsız tasarım + üretim",
-      "Vessel lavabolu mermer tezgahlar",
-      "Yuvarlak LED'li ayna programları",
-      "Akustik askılı çekmece sistemleri",
+      "8 farklı banyoya bağımsız tasarım + üretim",
+      "Mermer tezgah + vessel lavabo",
+      "Yuvarlak LED'li ayna",
+      "Yumuşak kapanan çekmece sistemi",
     ],
     scopeEn: [
-      "Independent design + build for 8 distinct bathrooms",
-      "Marble counters with vessel basins",
-      "Round LED-edged mirror programs",
-      "Soft-close hanging drawer systems",
+      "Independent design + build for 8 different bathrooms",
+      "Marble countertops + vessel basins",
+      "Round LED-edged mirrors",
+      "Soft-close drawer systems",
     ],
     materialsTr: [
       "Lacivert + antrasit + açık gri mat lake",
