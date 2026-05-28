@@ -46,24 +46,26 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: true, cancelled: 0 });
   }
 
-  // Restore stock — increment back what the order took. Wrapped in tx so
-  // partial failures don't leave half-restored stocks.
+  // Restore stock + cancel orders in a single interactive transaction.
+  // Interactive form (callback) keeps the types sane and lets us re-use
+  // the bulk updateMany at the end.
   await prisma.$transaction(
-    stale.flatMap((order) =>
-      order.items.map((item) =>
-        prisma.product.update({
-          where: { id: item.productId },
-          data: { stock: { increment: item.quantity } },
-        }),
-      ),
-    ),
+    async (tx) => {
+      for (const order of stale) {
+        for (const item of order.items) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { increment: item.quantity } },
+          });
+        }
+      }
+      await tx.order.updateMany({
+        where: { id: { in: stale.map((o) => o.id) } },
+        data: { status: "CANCELLED" },
+      });
+    },
     { timeout: 30_000 },
   );
-
-  await prisma.order.updateMany({
-    where: { id: { in: stale.map((o) => o.id) } },
-    data: { status: "CANCELLED" },
-  });
 
   let emailsSent = 0;
   await Promise.all(
