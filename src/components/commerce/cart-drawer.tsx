@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Drawer } from "vaul";
-import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { Minus, MessageCircle, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import {
   selectCartItems,
@@ -15,6 +15,8 @@ import {
 } from "@/lib/store/cart";
 import { useUIStore } from "@/lib/store/ui";
 import { formatPrice } from "@/lib/money";
+import { buildWhatsappUrl } from "@/lib/whatsapp";
+import { CONTACT } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 // Right-side slide drawer for cart. Vaul gives us iOS-style snap + drag-to-
@@ -195,6 +197,26 @@ export function CartDrawer() {
               >
                 Ödemeye Geç →
               </Link>
+              <a
+                href={buildWhatsappUrl(
+                  CONTACT.phoneE164,
+                  "Merhaba, sepetimdeki ürünler hakkında sorum var:\n" +
+                    cartItems
+                      .map(
+                        (i) =>
+                          `• ${i.product.name} × ${i.quantity} (${formatPrice(i.product.salePriceKurus * i.quantity)})`,
+                      )
+                      .join("\n") +
+                    `\nToplam: ${formatPrice(displayTotal)}`,
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={closeCart}
+                className="mt-2 flex items-center justify-center gap-1.5 rounded-full border border-border bg-background px-6 py-2.5 text-xs font-medium text-ink-muted hover:bg-surface-2"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                Sepet hakkında WhatsApp&apos;tan sor
+              </a>
             </footer>
           ) : null}
         </Drawer.Content>

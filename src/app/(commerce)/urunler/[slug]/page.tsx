@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
@@ -8,6 +7,7 @@ import { formatPrice } from "@/lib/money";
 import { AddToCartButton } from "@/components/commerce/add-to-cart-button";
 import { WhatsappInquiryButton } from "@/components/commerce/whatsapp-inquiry-button";
 import { ProductCard } from "@/components/commerce/product-card";
+import { PdpGallery } from "@/components/commerce/pdp-gallery";
 
 export const revalidate = 60;
 
@@ -37,8 +37,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const mainImage = product.images[0]?.url ?? "/placeholder-product.svg";
-
   // Related products from same category (excluding current).
   const allCategoryProducts = await getProducts({
     categorySlug: product.categorySlug,
@@ -67,21 +65,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
       </Link>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-surface-2 md:aspect-[4/5]">
-          <Image
-            src={mainImage}
-            alt={product.images[0]?.altText ?? product.name}
-            fill
-            sizes="(min-width: 768px) 50vw, 100vw"
-            priority
-            className="object-cover"
-          />
-          {product.stock > 0 && product.stock <= 2 ? (
-            <span className="absolute right-3 top-3 rounded-full bg-background/90 px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-brand backdrop-blur">
-              Son {product.stock} Adet
-            </span>
-          ) : null}
-        </div>
+        <PdpGallery
+          images={product.images}
+          productName={product.name}
+          lowStockBadge={product.stock}
+        />
 
         <div className="flex flex-col gap-5">
           <p className="text-[10px] font-mono uppercase tracking-widest text-ink-faint">
@@ -160,7 +148,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 slug: product.slug,
                 originalPriceKurus: product.originalPriceKurus,
                 salePriceKurus: product.salePriceKurus,
-                image: mainImage,
+                image: product.images[0]?.url ?? "/placeholder-product.svg",
                 brand: product.brand,
                 stock: product.stock,
                 categorySlug: product.categorySlug,

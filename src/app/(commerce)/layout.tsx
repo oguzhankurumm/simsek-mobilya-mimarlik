@@ -5,6 +5,7 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { getPublicSiteSettings } from "@/lib/site-settings";
+import { MaintenanceBanner } from "@/components/commerce/maintenance-banner";
 
 // TR-only e-commerce surface. No locale segment in URL.
 // Cart drawer + bottom tabs + React Query live here so marketing pages stay
@@ -30,6 +31,7 @@ export default async function CommerceLayout({
       <QueryProvider>
         <div className="flex min-h-dvh flex-col pb-16 md:pb-0">
           <SiteHeader locale="tr" />
+          {settings.maintenanceMode ? <MaintenanceBanner /> : null}
           <main className="flex-1">{children}</main>
           <SiteFooter
             locale="tr"

@@ -10,6 +10,7 @@ import {
   isValidIdempotencyKey,
 } from "@/lib/idempotency";
 import { AUTH_COOKIE_NAME, verifyToken } from "@/lib/auth";
+import { getPublicSiteSettings } from "@/lib/site-settings";
 
 // POST /api/orders
 //
@@ -61,6 +62,16 @@ async function getUserFromCookie() {
 export async function POST(req: Request) {
   const originBlock = originGuard(req);
   if (originBlock) return originBlock;
+
+  // Maintenance mode short-circuits new orders. Admin can still place orders
+  // (they wouldn't be on the public site anyway, but defensively safe).
+  const settings = await getPublicSiteSettings();
+  if (settings.maintenanceMode) {
+    return NextResponse.json(
+      { error: "Sipariş alımı geçici olarak durdurulmuştur" },
+      { status: 503 },
+    );
+  }
 
   const rawIdempotencyKey = req.headers.get(IDEMPOTENCY_HEADER);
   if (!isValidIdempotencyKey(rawIdempotencyKey)) {
