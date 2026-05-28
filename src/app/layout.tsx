@@ -5,6 +5,9 @@ import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { CartDrawer } from "@/components/commerce/cart-drawer";
+import { BottomTabs } from "@/components/commerce/bottom-tabs";
+import { MobileMenuDrawer } from "@/components/commerce/mobile-menu-drawer";
 import { SITE } from "@/config/site";
 import "./globals.css";
 
@@ -81,6 +84,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           <TooltipProvider delayDuration={150}>
             {children}
+            <CartDrawer />
+            <MobileMenuDrawer />
+            <BottomTabs />
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Logo } from "@/components/atoms/logo";
 import { ThemeToggle } from "@/components/atoms/theme-toggle";
 import { LocaleSwitcher } from "@/components/atoms/locale-switcher";
+import { CartIconButton } from "@/components/commerce/cart-icon-button";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { CONTACT, NAV_ITEMS } from "@/config/site";
@@ -95,6 +96,7 @@ export function SiteHeader({ locale }: SiteHeaderProps) {
           </a>
           <LocaleSwitcher />
           <ThemeToggle />
+          <CartIconButton />
           <Button
             variant="ghost"
             size="icon"

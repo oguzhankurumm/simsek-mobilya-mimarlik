@@ -8,6 +8,12 @@ const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "tr
 const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
+    remotePatterns: [
+      // Existing portfolio + demo product imagery is hosted on Unsplash.
+      { protocol: "https", hostname: "images.unsplash.com" },
+      // Vercel Blob (Phase E admin product uploads).
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+    ],
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],

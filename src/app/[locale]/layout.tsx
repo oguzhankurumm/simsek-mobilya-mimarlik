@@ -25,7 +25,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <div className="flex min-h-dvh flex-col">
+      <div className="flex min-h-dvh flex-col pb-16 md:pb-0">
         <SiteHeader locale={locale as Locale} />
         <main className="flex-1">{children}</main>
         <SiteFooter locale={locale as Locale} />

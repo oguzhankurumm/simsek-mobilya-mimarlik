@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice">
+  <rect width="400" height="500" fill="#f4f1eb"/>
+  <g fill="none" stroke="#d6cdb8" stroke-width="1.5">
+    <rect x="100" y="180" width="200" height="130" rx="4"/>
+    <line x1="120" y1="310" x2="120" y2="340"/>
+    <line x1="280" y1="310" x2="280" y2="340"/>
+  </g>
+  <text x="200" y="410" text-anchor="middle" font-family="ui-serif, Georgia, serif" font-size="14" fill="#a89c87" letter-spacing="2">ŞİMŞEK MOBİLYA</text>
+</svg>
