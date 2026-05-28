@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { slugify } from "@/lib/utils";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 
 interface ProductFormProps {
   categories: { id: string; name: string }[];
@@ -126,18 +127,15 @@ export function ProductForm({ categories, product }: ProductFormProps) {
             ))}
           </select>
         </label>
-        <label className="block">
-          <span className="mb-1 block text-xs uppercase tracking-wide text-zinc-500">
-            Görsel URL (Phase E.2: Vercel Blob)
-          </span>
-          <input
+        <div className="md:col-span-2">
+          <ImageUploadField
             name="imageUrl"
-            type="url"
-            defaultValue={product?.imageUrl}
-            placeholder="https://…"
-            className={fieldStyles}
+            folder="products"
+            label="Ana Görsel"
+            defaultValue={product?.imageUrl ?? ""}
+            filename={product?.slug ?? "product"}
           />
-        </label>
+        </div>
       </div>
 
       <label className="block">

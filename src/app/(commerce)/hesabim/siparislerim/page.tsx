@@ -59,8 +59,11 @@ export default async function OrdersPage() {
       <h2 className="text-base font-semibold">Siparişlerim</h2>
       <ul className="divide-y divide-border rounded-xl border border-border">
         {orders.map((order) => (
-          <li key={order.orderNumber} className="px-4 py-4">
-            <div className="flex items-start justify-between gap-3">
+          <li key={order.orderNumber}>
+            <Link
+              href={`/hesabim/siparis/${order.orderNumber}`}
+              className="flex items-start justify-between gap-3 px-4 py-4 transition-colors hover:bg-surface-2"
+            >
               <div className="space-y-1">
                 <p className="font-semibold tabular-nums">
                   {order.orderNumber}
@@ -83,7 +86,7 @@ export default async function OrdersPage() {
                 </p>
                 <ChevronRight className="ml-auto mt-1 h-4 w-4 text-ink-faint" />
               </div>
-            </div>
+            </Link>
           </li>
         ))}
       </ul>

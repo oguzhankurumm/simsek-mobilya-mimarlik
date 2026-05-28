@@ -72,6 +72,7 @@ export function AddToCartButton({
   return (
     <button
       onClick={handleAdd}
+      data-pdp-add-to-cart-anchor
       className={cn(
         "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-white transition-all hover:bg-brand/90 active:scale-95",
         justAdded && "bg-emerald-600 hover:bg-emerald-600",

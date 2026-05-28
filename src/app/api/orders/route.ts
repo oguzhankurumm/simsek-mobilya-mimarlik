@@ -11,6 +11,9 @@ import {
 } from "@/lib/idempotency";
 import { AUTH_COOKIE_NAME, verifyToken } from "@/lib/auth";
 import { getPublicSiteSettings } from "@/lib/site-settings";
+import { sendEmail, buildOrderConfirmationEmail } from "@/lib/send-email";
+import { tlToKurus, formatPrice } from "@/lib/money";
+import { buildWhatsappUrl } from "@/lib/whatsapp";
 
 // POST /api/orders
 //
@@ -201,6 +204,59 @@ export async function POST(req: Request) {
 
       return created;
     });
+
+    // Fire-and-forget confirmation email. Customer's address: user.email
+    // when logged in, else body.guestEmail. Skip if neither is available.
+    const recipientEmail = user
+      ? (await prisma.user
+          .findUnique({
+            where: { id: user.userId },
+            select: { email: true, name: true },
+          })
+          .catch(() => null))
+      : null;
+
+    const targetEmail = recipientEmail?.email ?? body.guestEmail ?? null;
+    const targetName =
+      recipientEmail?.name ?? body.guestName ?? "müşterimiz";
+
+    if (targetEmail) {
+      const ibanRow = body.ibanId
+        ? await prisma.iban
+            .findUnique({ where: { id: body.ibanId } })
+            .catch(() => null)
+        : null;
+      const waRow = body.whatsappLineId
+        ? await prisma.whatsappLine
+            .findUnique({ where: { id: body.whatsappLineId } })
+            .catch(() => null)
+        : null;
+      const totalKurus = tlToKurus(totalAmount.toString());
+      const waLink = waRow
+        ? buildWhatsappUrl(
+            waRow.numberE164,
+            `Merhaba, ${order.orderNumber} numaralı sipariş için dekont gönderiyorum.`,
+          )
+        : "";
+
+      const { subject, text, html } = buildOrderConfirmationEmail({
+        recipientName: targetName,
+        orderNumber: order.orderNumber,
+        totalTl: formatPrice(totalKurus),
+        ibanBankName: ibanRow?.bankName ?? "—",
+        ibanNumber: ibanRow?.ibanNumber ?? "—",
+        ibanHolder: ibanRow?.accountHolder ?? "—",
+        whatsappLink: waLink,
+        items: orderItems.map((i) => ({
+          name: i.productName,
+          quantity: i.quantity,
+          subtotalTl: formatPrice(tlToKurus(i.subtotal.toString())),
+        })),
+      });
+
+      // Don't await — failed email shouldn't block the order response.
+      void sendEmail({ to: targetEmail, subject, text, html });
+    }
 
     return NextResponse.json({
       orderNumber: order.orderNumber,

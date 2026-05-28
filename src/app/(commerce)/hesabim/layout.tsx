@@ -5,6 +5,7 @@ import {
   Heart,
   MapPin,
   User as UserIcon,
+  Settings,
   LogOut,
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/get-user";
@@ -15,6 +16,7 @@ const ACCOUNT_LINKS = [
   { href: "/hesabim/siparislerim", label: "Siparişlerim", icon: ShoppingBag },
   { href: "/hesabim/favorilerim", label: "Favorilerim", icon: Heart },
   { href: "/hesabim/adreslerim", label: "Adreslerim", icon: MapPin },
+  { href: "/hesabim/profilim", label: "Profilim", icon: Settings },
 ];
 
 export default async function AccountLayout({

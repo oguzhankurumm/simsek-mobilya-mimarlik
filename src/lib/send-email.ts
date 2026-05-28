@@ -54,6 +54,84 @@ export async function sendEmail(input: SendEmailInput): Promise<boolean> {
   }
 }
 
+export function buildOrderConfirmationEmail(opts: {
+  recipientName: string;
+  orderNumber: string;
+  totalTl: string;
+  ibanBankName: string;
+  ibanNumber: string;
+  ibanHolder: string;
+  whatsappLink: string;
+  items: { name: string; quantity: number; subtotalTl: string }[];
+}) {
+  const subject = `${SITE.shortName} — Sipariş Onayı ${opts.orderNumber}`;
+  const itemLinesTxt = opts.items
+    .map((i) => `  • ${i.name} × ${i.quantity} — ${i.subtotalTl}`)
+    .join("\n");
+
+  const text = [
+    `Merhaba ${opts.recipientName},`,
+    ``,
+    `Siparişiniz alındı. Aşağıdaki detayları kullanarak ödemenizi`,
+    `gerçekleştirebilirsiniz. Ödeme açıklamasına sipariş numaranızı yazınız.`,
+    ``,
+    `Sipariş No: ${opts.orderNumber}`,
+    `Toplam Tutar: ${opts.totalTl}`,
+    ``,
+    `Ürünler:`,
+    itemLinesTxt,
+    ``,
+    `IBAN:`,
+    `  ${opts.ibanBankName}`,
+    `  ${opts.ibanNumber}`,
+    `  Hesap Sahibi: ${opts.ibanHolder}`,
+    ``,
+    `Dekontunuzu WhatsApp üzerinden iletirseniz onay süresi 1 günden`,
+    `birkaç saate iner: ${opts.whatsappLink}`,
+    ``,
+    `Sorularınız için info@simsekmobilya.com veya +90 532 646 39 19.`,
+    ``,
+    `— ${SITE.name}`,
+  ].join("\n");
+
+  const itemLinesHtml = opts.items
+    .map(
+      (i) =>
+        `<tr><td style="padding:6px 0; font-size:13px;">${escapeHtml(i.name)} × ${i.quantity}</td><td style="padding:6px 0; font-size:13px; text-align:right; font-variant-numeric:tabular-nums; font-weight:600;">${escapeHtml(i.subtotalTl)}</td></tr>`,
+    )
+    .join("");
+
+  const html = `
+    <div style="font-family: ui-sans-serif, system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color:#1a1a1a;">
+      <p style="font-size:14px;">Merhaba ${escapeHtml(opts.recipientName)},</p>
+      <p style="font-size:14px;">Siparişiniz alındı. Aşağıdaki detayları kullanarak ödemenizi gerçekleştirebilirsiniz.</p>
+      <div style="background:#FAFAF7; border:1px solid #E5E0D5; border-radius:12px; padding:16px; margin:20px 0; text-align:center;">
+        <p style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888; margin:0;">Sipariş Numaranız</p>
+        <p style="font-size:24px; font-weight:700; letter-spacing:2px; color:#ED1C24; margin:6px 0 0; font-variant-numeric:tabular-nums;">${escapeHtml(opts.orderNumber)}</p>
+      </div>
+      <table style="width:100%; border-collapse:collapse; margin:16px 0;">
+        ${itemLinesHtml}
+        <tr style="border-top:1px solid #E5E0D5;">
+          <td style="padding:10px 0 0; font-size:14px; font-weight:600;">Toplam</td>
+          <td style="padding:10px 0 0; font-size:14px; font-weight:700; text-align:right; font-variant-numeric:tabular-nums;">${escapeHtml(opts.totalTl)}</td>
+        </tr>
+      </table>
+      <div style="border:1px solid #E5E0D5; border-radius:8px; padding:14px; margin:20px 0; font-size:13px;">
+        <p style="margin:0 0 6px; font-weight:600;">IBAN</p>
+        <p style="margin:0 0 2px;">${escapeHtml(opts.ibanBankName)}</p>
+        <p style="margin:0; font-family: ui-monospace, monospace; color:#444;">${escapeHtml(opts.ibanNumber)}</p>
+        <p style="margin:2px 0 0; color:#666;">${escapeHtml(opts.ibanHolder)}</p>
+        <p style="margin:10px 0 0; font-size:11px; color:#a18900;">⚠ Açıklamaya sipariş numaranızı yazmayı unutmayın.</p>
+      </div>
+      ${opts.whatsappLink ? `<p style="text-align:center; margin:20px 0;"><a href="${opts.whatsappLink}" style="display:inline-block; background:#25D366; color:#fff; padding:12px 24px; border-radius:24px; text-decoration:none; font-weight:600; font-size:14px;">Dekontu WhatsApp'tan Gönder</a></p>` : ""}
+      <p style="font-size:12px; color:#777; margin-top:24px;">Sorularınız için info@simsekmobilya.com</p>
+      <p style="font-size:12px; color:#999; margin-top:8px;">— ${escapeHtml(SITE.name)}</p>
+    </div>
+  `;
+
+  return { subject, text, html };
+}
+
 export function buildPasswordResetEmail(opts: {
   recipientName: string;
   code: string;

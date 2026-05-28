@@ -10,6 +10,10 @@ import { ProductCard } from "@/components/commerce/product-card";
 import { PdpGallery } from "@/components/commerce/pdp-gallery";
 import { WishlistButton } from "@/components/commerce/wishlist-button";
 import { StockNotificationModal } from "@/components/commerce/stock-notification-modal";
+import { PdpStickyCta } from "@/components/commerce/pdp-sticky-cta";
+import { ProductJsonLd } from "@/components/commerce/product-jsonld";
+import { TrackProductView } from "@/components/commerce/track-product-view";
+import { RecentlyViewedStrip } from "@/components/commerce/recently-viewed-strip";
 
 export const revalidate = 60;
 
@@ -46,6 +50,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
   });
   const related = allCategoryProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
+  // Pull a broader catalog snapshot to power the "Son Görüntülenenler"
+  // strip — filtered client-side against the user's local history.
+  const recentCatalog = await getProducts({ limit: 30 });
+
   const dimensionsLabel =
     product.widthCm && product.depthCm && product.heightCm
       ? `${product.widthCm} × ${product.depthCm} × ${product.heightCm} cm (G × D × Y)`
@@ -53,6 +61,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
   return (
     <section className="container-editorial py-6 md:py-12">
+      <ProductJsonLd product={product} />
+      <TrackProductView slug={product.slug} />
       {IS_DEMO_MODE ? (
         <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
           Demo veri — gerçek katalog için DB bağlayın ve seed çalıştırın.
@@ -195,6 +205,25 @@ export default async function ProductDetailPage({ params }: PageProps) {
           </div>
         </section>
       ) : null}
+
+      <RecentlyViewedStrip
+        allProducts={recentCatalog}
+        excludeSlug={product.slug}
+      />
+
+      <PdpStickyCta
+        product={{
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          originalPriceKurus: product.originalPriceKurus,
+          salePriceKurus: product.salePriceKurus,
+          image: product.images[0]?.url ?? "/placeholder-product.svg",
+          brand: product.brand,
+          stock: product.stock,
+          categorySlug: product.categorySlug,
+        }}
+      />
     </section>
   );
 }
