@@ -12,6 +12,7 @@ import { WishlistButton } from "@/components/commerce/wishlist-button";
 import { StockNotificationModal } from "@/components/commerce/stock-notification-modal";
 import { PdpStickyCta } from "@/components/commerce/pdp-sticky-cta";
 import { ProductJsonLd } from "@/components/commerce/product-jsonld";
+import { Breadcrumbs } from "@/components/commerce/breadcrumbs";
 import { TrackProductView } from "@/components/commerce/track-product-view";
 import { RecentlyViewedStrip } from "@/components/commerce/recently-viewed-strip";
 
@@ -69,12 +70,19 @@ export default async function ProductDetailPage({ params }: PageProps) {
         </div>
       ) : null}
 
-      <Link
-        href="/urunler"
-        className="mb-6 inline-flex items-center gap-1 text-xs text-ink-muted hover:text-brand"
-      >
-        <ChevronLeft className="h-3.5 w-3.5" /> Tüm Ürünler
-      </Link>
+      <div className="mb-6">
+        <Breadcrumbs
+          items={[
+            { label: "Ana Sayfa", href: "/" },
+            { label: "Ürünler", href: "/urunler" },
+            {
+              label: product.categoryName,
+              href: `/urunler?kategori=${product.categorySlug}`,
+            },
+            { label: product.name },
+          ]}
+        />
+      </div>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
         <PdpGallery

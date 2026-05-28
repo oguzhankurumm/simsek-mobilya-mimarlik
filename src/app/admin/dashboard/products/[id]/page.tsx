@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ProductForm } from "@/components/admin/product-form";
 import { NotifyStockButton } from "@/components/admin/notify-stock-button";
+import { ProductGalleryManager } from "@/components/admin/product-gallery-manager";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,17 @@ export default async function EditProductPage({ params }: PageProps) {
         productId={product.id}
         pendingCount={pendingNotificationCount}
         stockAvailable={product.stock > 0}
+      />
+
+      <ProductGalleryManager
+        productId={product.id}
+        initialImages={product.images.map((img) => ({
+          id: img.id,
+          url: img.url,
+          altText: img.altText,
+          isMain: img.isMain,
+          displayOrder: img.displayOrder,
+        }))}
       />
 
       <ProductForm

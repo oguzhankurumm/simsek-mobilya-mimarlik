@@ -83,19 +83,27 @@ export default async function CustomerOrderDetail({ params }: PageProps) {
         <ChevronLeft className="h-3.5 w-3.5" /> Siparişlerim
       </Link>
 
-      <header className="space-y-1">
-        <p className="text-[10px] font-mono uppercase tracking-widest text-ink-faint">
-          Sipariş
-        </p>
-        <h2 className="text-display text-2xl tracking-tight tabular-nums">
-          {order.orderNumber}
-        </h2>
-        <p className="text-xs text-ink-muted">
-          {order.createdAt.toLocaleString("tr-TR", {
-            dateStyle: "long",
-            timeStyle: "short",
-          })}
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-ink-faint">
+            Sipariş
+          </p>
+          <h2 className="text-display text-2xl tracking-tight tabular-nums">
+            {order.orderNumber}
+          </h2>
+          <p className="text-xs text-ink-muted">
+            {order.createdAt.toLocaleString("tr-TR", {
+              dateStyle: "long",
+              timeStyle: "short",
+            })}
+          </p>
+        </div>
+        <Link
+          href={`/hesabim/siparis/${order.orderNumber}/fatura`}
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium hover:bg-surface-2"
+        >
+          Fatura / PDF
+        </Link>
       </header>
 
       {isCancelled ? (
