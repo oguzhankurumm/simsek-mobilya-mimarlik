@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Trash2, Save, Plus } from "lucide-react";
+import { Trash2, Save, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface CrudColumn<T> {
@@ -20,6 +20,10 @@ interface SimpleCrudTableProps<T extends { id: string }> {
   apiPath: string;
   emptyRow: Omit<T, "id">;
   blankLabel?: string;
+  /** When true, renders ↑/↓ arrow buttons that PATCH a `displayOrder`
+   *  swap between adjacent rows. Rows must already be sorted by their
+   *  `displayOrder` value in the parent server component. */
+  reorderable?: boolean;
 }
 
 // Inline CRUD table used by Ibans, WhatsApp, Categories, Hero admin pages.
@@ -33,6 +37,7 @@ export function SimpleCrudTable<T extends { id: string }>({
   apiPath,
   emptyRow,
   blankLabel = "Yeni Ekle",
+  reorderable,
 }: SimpleCrudTableProps<T>) {
   const router = useRouter();
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -52,6 +57,37 @@ export function SimpleCrudTable<T extends { id: string }>({
       toast.error(err.error ?? "Kaydedilemedi");
       return;
     }
+    router.refresh();
+  }
+
+  async function handleMove(id: string, direction: "up" | "down") {
+    const index = rows.findIndex((r) => r.id === id);
+    const otherIndex = direction === "up" ? index - 1 : index + 1;
+    if (index < 0 || otherIndex < 0 || otherIndex >= rows.length) return;
+
+    const a = rows[index] as unknown as Record<string, unknown>;
+    const b = rows[otherIndex] as unknown as Record<string, unknown>;
+    const orderA = Number(a.displayOrder ?? 0);
+    const orderB = Number(b.displayOrder ?? 0);
+    // If both rows share the same displayOrder (e.g. all zeroes), bump the
+    // moving row by +/- 1 so the swap actually reorders them.
+    const swapA = orderA === orderB ? (direction === "up" ? orderB - 1 : orderB + 1) : orderB;
+    const swapB = orderA === orderB ? orderA : orderA;
+
+    setSavingId(id);
+    await Promise.all([
+      fetch(`${apiPath}/${rows[index].id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ displayOrder: swapA }),
+      }),
+      fetch(`${apiPath}/${rows[otherIndex].id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ displayOrder: swapB }),
+      }),
+    ]);
+    setSavingId(null);
     router.refresh();
   }
 
@@ -95,11 +131,12 @@ export function SimpleCrudTable<T extends { id: string }>({
                 {c.label}
               </th>
             ))}
+            {reorderable ? <th className="w-16 px-2 py-2.5" /> : null}
             <th className="w-12 px-4 py-2.5" />
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-          {rows.map((row) => (
+          {rows.map((row, index) => (
             <tr key={row.id} className={cn(savingId === row.id && "opacity-60")}>
               {columns.map((c) => (
                 <td key={String(c.key)} className="px-3 py-1.5">
@@ -110,6 +147,30 @@ export function SimpleCrudTable<T extends { id: string }>({
                   />
                 </td>
               ))}
+              {reorderable ? (
+                <td className="px-2 py-1.5">
+                  <div className="flex gap-0.5">
+                    <button
+                      onClick={() => handleMove(row.id, "up")}
+                      disabled={index === 0 || savingId === row.id}
+                      className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-30 dark:hover:bg-zinc-800"
+                      aria-label="Yukarı taşı"
+                    >
+                      <ChevronUp className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleMove(row.id, "down")}
+                      disabled={
+                        index === rows.length - 1 || savingId === row.id
+                      }
+                      className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-30 dark:hover:bg-zinc-800"
+                      aria-label="Aşağı taşı"
+                    >
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </td>
+              ) : null}
               <td className="px-3 py-1.5">
                 <button
                   onClick={() => handleDelete(row.id)}
@@ -134,6 +195,7 @@ export function SimpleCrudTable<T extends { id: string }>({
                 />
               </td>
             ))}
+            {reorderable ? <td /> : null}
             <td className="px-3 py-1.5">
               <button
                 onClick={handleCreate}

@@ -18,6 +18,7 @@ export default async function WhatsappAdminPage() {
       </header>
       <SimpleCrudTable
         entityKey="whatsapp"
+        reorderable
         rows={lines.map((l) => ({
           id: l.id,
           label: l.label,

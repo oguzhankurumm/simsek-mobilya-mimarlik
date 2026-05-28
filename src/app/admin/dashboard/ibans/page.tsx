@@ -20,6 +20,7 @@ export default async function IbansAdminPage() {
       </header>
       <SimpleCrudTable
         entityKey="iban"
+        reorderable
         rows={ibans.map((i) => ({
           id: i.id,
           title: i.title,

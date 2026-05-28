@@ -1,0 +1,43 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
+
+// Plain GET /api/health for uptime checks (Vercel Healthcheck, Better Uptime,
+// Pingdom). Reports DB reachability + a coarse-grained latency number so a
+// degraded DB shows up before user requests do.
+
+export async function GET() {
+  const startedAt = Date.now();
+  let dbStatus: "ok" | "down" = "down";
+  let dbLatencyMs: number | null = null;
+  let dbError: string | null = null;
+
+  try {
+    const dbStart = Date.now();
+    // 1=1 — cheapest no-op query Prisma supports; doesn't hit any user table.
+    await prisma.$queryRaw`SELECT 1`;
+    dbLatencyMs = Date.now() - dbStart;
+    dbStatus = "ok";
+  } catch (err) {
+    dbError = err instanceof Error ? err.message.slice(0, 200) : "unknown";
+  }
+
+  const body = {
+    ok: dbStatus === "ok",
+    timestamp: new Date().toISOString(),
+    uptime_check_ms: Date.now() - startedAt,
+    db: {
+      status: dbStatus,
+      latency_ms: dbLatencyMs,
+      ...(dbError ? { error: dbError } : {}),
+    },
+    runtime: "nodejs",
+    node_env: process.env.NODE_ENV,
+  };
+
+  return NextResponse.json(body, {
+    status: body.ok ? 200 : 503,
+    headers: { "Cache-Control": "no-store" },
+  });
+}

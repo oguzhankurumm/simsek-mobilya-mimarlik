@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   Settings,
   Bell,
+  BarChart3,
   LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 
 const ADMIN_LINKS = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/dashboard/analytics", label: "Analitik", icon: BarChart3 },
   { href: "/admin/dashboard/orders", label: "Siparişler", icon: ShoppingCart },
   { href: "/admin/dashboard/products", label: "Ürünler", icon: Package },
   { href: "/admin/dashboard/categories", label: "Kategoriler", icon: FolderTree },

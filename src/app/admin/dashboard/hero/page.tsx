@@ -20,6 +20,7 @@ export default async function HeroAdminPage() {
       </header>
       <SimpleCrudTable
         entityKey="hero"
+        reorderable
         rows={slides.map((s) => ({
           id: s.id,
           imageUrl: s.imageUrl,

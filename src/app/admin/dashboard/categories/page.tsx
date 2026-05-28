@@ -20,6 +20,7 @@ export default async function CategoriesAdminPage() {
       </header>
       <SimpleCrudTable
         entityKey="category"
+        reorderable
         rows={categories.map((c) => ({
           id: c.id,
           name: c.name,
