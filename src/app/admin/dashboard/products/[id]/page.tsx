@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ProductForm } from "@/components/admin/product-form";
+import { NotifyStockButton } from "@/components/admin/notify-stock-button";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ interface PageProps {
 export default async function EditProductPage({ params }: PageProps) {
   const { id } = await params;
 
-  const [product, categories] = await Promise.all([
+  const [product, categories, pendingNotificationCount] = await Promise.all([
     prisma.product
       .findUnique({
         where: { id },
@@ -21,6 +22,9 @@ export default async function EditProductPage({ params }: PageProps) {
     prisma.category
       .findMany({ orderBy: { displayOrder: "asc" } })
       .catch(() => []),
+    prisma.stockNotification
+      .count({ where: { productId: id, notifiedAt: null } })
+      .catch(() => 0),
   ]);
 
   if (!product) notFound();
@@ -35,6 +39,13 @@ export default async function EditProductPage({ params }: PageProps) {
           {product.name}
         </h1>
       </header>
+
+      <NotifyStockButton
+        productId={product.id}
+        pendingCount={pendingNotificationCount}
+        stockAvailable={product.stock > 0}
+      />
+
       <ProductForm
         categories={categories.map((c) => ({ id: c.id, name: c.name }))}
         product={{

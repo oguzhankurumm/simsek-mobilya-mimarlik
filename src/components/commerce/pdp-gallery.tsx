@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface GalleryImage {
@@ -39,6 +39,7 @@ export function PdpGallery({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const scrollTo = useCallback(
     (index: number) => emblaApi?.scrollTo(index),
@@ -70,19 +71,30 @@ export function PdpGallery({
     const only = safeImages[0];
     return (
       <div className="space-y-3">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-surface-2">
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(true)}
+          className="group relative block aspect-[4/5] w-full overflow-hidden rounded-md bg-surface-2"
+          aria-label="Görseli büyüt"
+        >
           <Image
             src={only.url}
             alt={only.altText || productName}
             fill
             sizes="(min-width: 768px) 50vw, 100vw"
             priority
-            className="object-cover"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
-          {showLowStock ? (
-            <LowStockBadge stock={lowStockBadge!} />
-          ) : null}
-        </div>
+          {showLowStock ? <LowStockBadge stock={lowStockBadge!} /> : null}
+          <ExpandHint />
+        </button>
+        <Lightbox
+          open={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          images={safeImages}
+          initialIndex={0}
+          productName={productName}
+        />
       </div>
     );
   }
@@ -93,10 +105,13 @@ export function PdpGallery({
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex">
             {safeImages.map((img, i) => (
-              <div
+              <button
                 key={img.url + i}
+                type="button"
+                onClick={() => setLightboxOpen(true)}
                 className="relative aspect-[4/5] w-full shrink-0"
                 aria-roledescription="slide"
+                aria-label={`Görseli ${i + 1} büyüt`}
               >
                 <Image
                   src={img.url}
@@ -106,12 +121,13 @@ export function PdpGallery({
                   priority={i === 0}
                   className="object-cover"
                 />
-              </div>
+              </button>
             ))}
           </div>
         </div>
 
         {showLowStock ? <LowStockBadge stock={lowStockBadge!} /> : null}
+        <ExpandHint />
 
         <button
           onClick={scrollPrev}
@@ -174,14 +190,164 @@ export function PdpGallery({
           </li>
         ))}
       </ul>
+
+      <Lightbox
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        images={safeImages}
+        initialIndex={selectedIndex}
+        productName={productName}
+      />
     </div>
   );
 }
 
 function LowStockBadge({ stock }: { stock: number }) {
   return (
-    <span className="absolute right-3 top-3 z-10 rounded-full bg-background/90 px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-brand backdrop-blur">
+    <span className="pointer-events-none absolute right-3 top-3 z-10 rounded-full bg-background/90 px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-brand backdrop-blur">
       Son {stock} Adet
     </span>
+  );
+}
+
+function ExpandHint() {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute left-3 top-3 z-10 hidden h-8 w-8 items-center justify-center rounded-full bg-background/80 text-ink-muted backdrop-blur transition-opacity group-hover:bg-background md:flex"
+    >
+      <Maximize2 className="h-3.5 w-3.5" />
+    </span>
+  );
+}
+
+interface LightboxProps {
+  open: boolean;
+  onClose: () => void;
+  images: GalleryImage[];
+  initialIndex: number;
+  productName: string;
+}
+
+function Lightbox({
+  open,
+  onClose,
+  images,
+  initialIndex,
+  productName,
+}: LightboxProps) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: images.length > 1,
+    startIndex: initialIndex,
+  });
+  const [index, setIndex] = useState(initialIndex);
+
+  // Sync initial index on every open (otherwise lightbox starts where user
+  // last left it, which is jarring).
+  useEffect(() => {
+    if (!emblaApi || !open) return;
+    emblaApi.scrollTo(initialIndex, true);
+  }, [open, initialIndex, emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    const onSelect = () => setIndex(emblaApi.selectedScrollSnap());
+    onSelect();
+    emblaApi.on("select", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi]);
+
+  // Body scroll lock + Escape to close while open.
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") emblaApi?.scrollPrev();
+      if (e.key === "ArrowRight") emblaApi?.scrollNext();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose, emblaApi]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${productName} görseller`}
+      className="fixed inset-0 z-[100] flex flex-col bg-black/95"
+    >
+      <header className="flex items-center justify-between gap-3 px-4 py-3 text-white">
+        <p className="text-xs tabular-nums">
+          {index + 1} / {images.length}
+        </p>
+        <button
+          onClick={onClose}
+          aria-label="Kapat"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </header>
+
+      <div className="flex flex-1 items-center" ref={emblaRef}>
+        <div className="flex h-full w-full">
+          {images.map((img, i) => (
+            <div
+              key={img.url + i}
+              className="relative flex h-full w-full shrink-0 items-center justify-center"
+            >
+              <Image
+                src={img.url}
+                alt={img.altText || `${productName} — ${i + 1}`}
+                fill
+                sizes="100vw"
+                priority={i === initialIndex}
+                className="object-contain"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {images.length > 1 ? (
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <button
+            onClick={() => emblaApi?.scrollPrev()}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            aria-label="Önceki"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <div className="flex gap-1.5">
+            {images.map((_, i) => (
+              <span
+                key={i}
+                className={cn(
+                  "h-1.5 rounded-full transition-all",
+                  i === index ? "w-6 bg-white" : "w-1.5 bg-white/40",
+                )}
+                aria-hidden
+              />
+            ))}
+          </div>
+          <button
+            onClick={() => emblaApi?.scrollNext()}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            aria-label="Sonraki"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 }

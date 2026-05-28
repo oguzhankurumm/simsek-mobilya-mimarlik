@@ -12,6 +12,7 @@ import {
   MessageCircle,
   Image as ImageIcon,
   Settings,
+  Bell,
   LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -23,6 +24,11 @@ const ADMIN_LINKS = [
   { href: "/admin/dashboard/products", label: "Ürünler", icon: Package },
   { href: "/admin/dashboard/categories", label: "Kategoriler", icon: FolderTree },
   { href: "/admin/dashboard/customers", label: "Müşteriler", icon: Users },
+  {
+    href: "/admin/dashboard/stock-notifications",
+    label: "Stok Bildirimleri",
+    icon: Bell,
+  },
   { href: "/admin/dashboard/ibans", label: "IBAN'lar", icon: Landmark },
   { href: "/admin/dashboard/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/admin/dashboard/hero", label: "Hero Slides", icon: ImageIcon },

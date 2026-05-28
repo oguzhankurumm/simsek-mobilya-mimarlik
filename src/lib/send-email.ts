@@ -132,6 +132,105 @@ export function buildOrderConfirmationEmail(opts: {
   return { subject, text, html };
 }
 
+const STATUS_TR: Record<string, string> = {
+  PENDING: "Ödeme Bekleniyor",
+  PAYMENT_RECEIVED: "Ödeme Alındı",
+  PROCESSING: "Hazırlanıyor",
+  SHIPPED: "Kargoda",
+  DELIVERED: "Teslim Edildi",
+  CANCELLED: "İptal",
+};
+
+const STATUS_BODY: Record<string, string> = {
+  PAYMENT_RECEIVED:
+    "Ödemeniz onaylandı. Siparişiniz hazırlanmaya alındı.",
+  PROCESSING:
+    "Siparişiniz atölyemizde hazırlanıyor. Kargo aşamasına geçince tekrar bilgilendireceğiz.",
+  SHIPPED:
+    "Siparişiniz kargoya teslim edildi. Yakında elinizde.",
+  DELIVERED:
+    "Siparişiniz teslim edildi. Ürünleri beğeneceğinizi umuyoruz — herhangi bir sorun olursa info@simsekmobilya.com",
+  CANCELLED:
+    "Siparişiniz iptal edildi. Yapmış olduğunuz ödeme varsa iade prosedürü için bizimle iletişime geçin.",
+  PENDING: "Siparişiniz alındı, ödemenizi bekliyoruz.",
+};
+
+export function buildOrderStatusEmail(opts: {
+  recipientName: string;
+  orderNumber: string;
+  status: string;
+  trackingUrl: string;
+}) {
+  const statusLabel = STATUS_TR[opts.status] ?? opts.status;
+  const body = STATUS_BODY[opts.status] ?? "Sipariş durumunuz güncellendi.";
+  const subject = `${SITE.shortName} — Sipariş ${opts.orderNumber} • ${statusLabel}`;
+
+  const text = [
+    `Merhaba ${opts.recipientName},`,
+    ``,
+    `Siparişinizin yeni durumu: ${statusLabel}`,
+    ``,
+    body,
+    ``,
+    `Sipariş No: ${opts.orderNumber}`,
+    `Detay: ${opts.trackingUrl}`,
+    ``,
+    `— ${SITE.name}`,
+  ].join("\n");
+
+  const html = `
+    <div style="font-family: ui-sans-serif, system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color:#1a1a1a;">
+      <p style="font-size:14px;">Merhaba ${escapeHtml(opts.recipientName)},</p>
+      <div style="background:#FAFAF7; border:1px solid #E5E0D5; border-radius:12px; padding:16px; margin:18px 0; text-align:center;">
+        <p style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888; margin:0 0 4px;">Yeni Durum</p>
+        <p style="font-size:18px; font-weight:700; color:#1a1a1a; margin:0;">${escapeHtml(statusLabel)}</p>
+        <p style="font-size:12px; color:#666; margin:6px 0 0; font-variant-numeric:tabular-nums;">Sipariş No: ${escapeHtml(opts.orderNumber)}</p>
+      </div>
+      <p style="font-size:14px;">${escapeHtml(body)}</p>
+      <p style="text-align:center; margin:20px 0;">
+        <a href="${opts.trackingUrl}" style="display:inline-block; background:#ED1C24; color:#fff; padding:10px 20px; border-radius:24px; text-decoration:none; font-weight:600; font-size:13px;">Sipariş Detayı</a>
+      </p>
+      <p style="font-size:12px; color:#999; margin-top:24px;">— ${escapeHtml(SITE.name)}</p>
+    </div>
+  `;
+
+  return { subject, text, html };
+}
+
+export function buildStockBackInEmail(opts: {
+  recipientName: string;
+  productName: string;
+  productUrl: string;
+}) {
+  const subject = `${SITE.shortName} — ${opts.productName} tekrar stokta`;
+  const text = [
+    `Merhaba ${opts.recipientName},`,
+    ``,
+    `Bildirim aldığınız ürün tekrar stokta:`,
+    `${opts.productName}`,
+    ``,
+    `Hemen göz at: ${opts.productUrl}`,
+    ``,
+    `Stok sınırlı olabilir — ilgileniyorsanız beklemeden bakmanızı öneririz.`,
+    ``,
+    `— ${SITE.name}`,
+  ].join("\n");
+
+  const html = `
+    <div style="font-family: ui-sans-serif, system-ui, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; color:#1a1a1a;">
+      <p style="font-size:14px;">Merhaba ${escapeHtml(opts.recipientName)},</p>
+      <p style="font-size:14px;">Bildirim aldığınız ürün tekrar stokta:</p>
+      <p style="font-size:20px; font-weight:600; margin:12px 0;">${escapeHtml(opts.productName)}</p>
+      <p style="text-align:center; margin:20px 0;">
+        <a href="${opts.productUrl}" style="display:inline-block; background:#ED1C24; color:#fff; padding:12px 24px; border-radius:24px; text-decoration:none; font-weight:600; font-size:14px;">Ürüne Git</a>
+      </p>
+      <p style="font-size:12px; color:#999; margin-top:24px;">— ${escapeHtml(SITE.name)}</p>
+    </div>
+  `;
+
+  return { subject, text, html };
+}
+
 export function buildPasswordResetEmail(opts: {
   recipientName: string;
   code: string;

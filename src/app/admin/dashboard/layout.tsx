@@ -1,5 +1,6 @@
 import { requireAdminOrRedirect } from "@/lib/get-user";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { CommandPalette } from "@/components/admin/command-palette";
 
 export default async function AdminDashboardLayout({
   children,
@@ -16,6 +17,7 @@ export default async function AdminDashboardLayout({
           {children}
         </main>
       </div>
+      <CommandPalette />
     </div>
   );
 }

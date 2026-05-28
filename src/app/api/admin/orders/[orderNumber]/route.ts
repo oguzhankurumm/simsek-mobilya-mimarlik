@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
+import { SITE } from "@/config/site";
+import { buildOrderStatusEmail, sendEmail } from "@/lib/send-email";
 
 export const runtime = "nodejs";
 
@@ -34,15 +36,51 @@ export async function PATCH(
     );
   }
 
+  // Read the existing status so we can decide whether to fire an email.
+  // Status not changing → skip notification (admin tweaking notes etc.).
+  const existing = await prisma.order
+    .findUnique({
+      where: { orderNumber },
+      select: {
+        status: true,
+        user: { select: { email: true, name: true } },
+        guestEmail: true,
+        guestName: true,
+      },
+    })
+    .catch(() => null);
+
+  if (!existing) {
+    return NextResponse.json({ error: "Sipariş bulunamadı" }, { status: 404 });
+  }
+
   const updated = await prisma.order.updateMany({
     where: { orderNumber },
     data: parsed.data,
   });
   if (updated.count === 0) {
-    return NextResponse.json(
-      { error: "Sipariş bulunamadı" },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "Sipariş bulunamadı" }, { status: 404 });
+  }
+
+  if (existing.status !== parsed.data.status) {
+    const recipient = existing.user?.email ?? existing.guestEmail ?? null;
+    const recipientName =
+      existing.user?.name ?? existing.guestName ?? "müşterimiz";
+
+    if (recipient) {
+      const trackingUrl = existing.user
+        ? `${SITE.url}/hesabim/siparis/${orderNumber}`
+        : `${SITE.url}/siparis-takibi`;
+
+      const { subject, text, html } = buildOrderStatusEmail({
+        recipientName,
+        orderNumber,
+        status: parsed.data.status,
+        trackingUrl,
+      });
+      // Fire-and-forget; an email failure shouldn't fail the admin's save.
+      void sendEmail({ to: recipient, subject, text, html });
+    }
   }
 
   return NextResponse.json({ ok: true });
