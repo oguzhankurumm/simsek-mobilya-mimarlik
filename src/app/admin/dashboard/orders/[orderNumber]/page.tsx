@@ -66,16 +66,24 @@ export default async function OrderDetailPage({ params }: PageProps) {
             })}
           </p>
         </div>
-        {waUrl ? (
-          <a
-            href={waUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full bg-[#25D366] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1ebe5d]"
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href={`/admin/dashboard/orders/${order.orderNumber}/fatura`}
+            className="rounded-full border border-zinc-300 px-4 py-2 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
           >
-            Müşteriye WhatsApp
-          </a>
-        ) : null}
+            Fatura / PDF
+          </Link>
+          {waUrl ? (
+            <a
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-[#25D366] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1ebe5d]"
+            >
+              Müşteriye WhatsApp
+            </a>
+          ) : null}
+        </div>
       </header>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[2fr_1fr]">

@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { tlToKurus, formatPrice } from "@/lib/money";
 import { buildWhatsappUrl, buildOrderReceiptMessage } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
+import { CancelOrderButton } from "@/components/commerce/cancel-order-button";
 
 interface PageProps {
   params: Promise<{ orderNumber: string }>;
@@ -98,12 +99,17 @@ export default async function CustomerOrderDetail({ params }: PageProps) {
             })}
           </p>
         </div>
-        <Link
-          href={`/hesabim/siparis/${order.orderNumber}/fatura`}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium hover:bg-surface-2"
-        >
-          Fatura / PDF
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          {order.status === "PENDING" ? (
+            <CancelOrderButton orderNumber={order.orderNumber} />
+          ) : null}
+          <Link
+            href={`/hesabim/siparis/${order.orderNumber}/fatura`}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium hover:bg-surface-2"
+          >
+            Fatura / PDF
+          </Link>
+        </div>
       </header>
 
       {isCancelled ? (
