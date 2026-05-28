@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Phone, Mail, MapPin } from "lucide-react";
+import NextLink from "next/link";
 import { InstagramIcon } from "@/components/atoms/icons";
 import { Logo } from "@/components/atoms/logo";
 import { Link } from "@/i18n/navigation";
@@ -9,11 +10,24 @@ import type { ComponentProps } from "react";
 
 interface SiteFooterProps {
   locale: Locale;
+  legal?: {
+    vkn?: string;
+    mersisNo?: string;
+    etbisNo?: string;
+    legalAddress?: string;
+  };
 }
 
 type AppHref = ComponentProps<typeof Link>["href"];
 
-export function SiteFooter({ locale }: SiteFooterProps) {
+const COMMERCE_LEGAL_LINKS_TR = [
+  { href: "/mesafeli-satis-sozlesmesi", label: "Mesafeli Satış Sözleşmesi" },
+  { href: "/on-bilgilendirme", label: "Ön Bilgilendirme" },
+  { href: "/cayma-hakki", label: "Cayma Hakkı" },
+  { href: "/iade-politikasi", label: "İade & Kargo" },
+];
+
+export function SiteFooter({ locale, legal }: SiteFooterProps) {
   const t = useTranslations("footer");
   const tNav = useTranslations("nav");
   const tContact = useTranslations("contact");
@@ -110,6 +124,42 @@ export function SiteFooter({ locale }: SiteFooterProps) {
           </div>
         </div>
       </div>
+
+      {/* E-commerce legal block — only in TR; surfaces VKN/MERSIS/ETBİS when
+          SiteSettings has them set (P11 requirement). */}
+      {isTr ? (
+        <div className="container-editorial border-t border-border py-6 text-xs text-ink-muted">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <ul className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              {COMMERCE_LEGAL_LINKS_TR.map((link) => (
+                <li key={link.href}>
+                  <NextLink
+                    href={link.href}
+                    className="hover:text-brand transition-colors"
+                  >
+                    {link.label}
+                  </NextLink>
+                </li>
+              ))}
+              <li>
+                <NextLink
+                  href="/siparis-takibi"
+                  className="hover:text-brand transition-colors"
+                >
+                  Sipariş Takibi
+                </NextLink>
+              </li>
+            </ul>
+            {legal && (legal.vkn || legal.mersisNo || legal.etbisNo) ? (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-faint">
+                {legal.vkn ? <span>VKN {legal.vkn}</span> : null}
+                {legal.mersisNo ? <span>· MERSIS {legal.mersisNo}</span> : null}
+                {legal.etbisNo ? <span>· ETBİS {legal.etbisNo}</span> : null}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <div className="container-editorial flex flex-col-reverse md:flex-row items-start md:items-center gap-3 justify-between border-t border-border py-6 text-xs text-ink-faint">
         <p>

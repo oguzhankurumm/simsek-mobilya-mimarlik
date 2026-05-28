@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { generateResetCode, sha256 } from "@/lib/auth";
+import { buildPasswordResetEmail, sendEmail } from "@/lib/send-email";
 
 export const runtime = "nodejs";
 
@@ -30,12 +31,11 @@ export async function POST(req: Request) {
       },
     });
 
-    // TODO Phase 2: send email via Resend. For now log to server console so
-    // dev can copy the code from the terminal.
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[forgot] ${email} → reset code: ${rawCode}`);
-    }
-    // Production hook lives here: Resend send templated email.
+    const { subject, text, html } = buildPasswordResetEmail({
+      recipientName: user.name,
+      code: rawCode,
+    });
+    await sendEmail({ to: user.email, subject, text, html });
   }
 
   return NextResponse.json({ ok: true });
