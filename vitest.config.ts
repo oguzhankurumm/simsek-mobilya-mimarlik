@@ -16,6 +16,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // server-only is a marker package from Next.js that throws on the
+      // client. Vitest doesn't know about Next's server boundary, so we
+      // resolve it to an empty module so server-only files can be tested.
+      "server-only": path.resolve(__dirname, "./tests/_stubs/server-only.ts"),
     },
   },
 });

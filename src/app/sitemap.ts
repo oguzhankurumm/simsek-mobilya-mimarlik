@@ -65,7 +65,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Live product slugs — falls back to MOCK_PRODUCTS in dev / when DB is
-  // unreachable, so the sitemap never crashes a build.
+  // unreachable, so the sitemap never crashes a build. We attach product
+  // images via the `images` field; Google reads the image sitemap signal
+  // off the regular sitemap when entries include this key.
   const products = await getProducts();
   for (const product of products) {
     entries.push({
@@ -73,6 +75,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.75,
+      images: product.images
+        .map((img) => img.url)
+        .filter((url): url is string => Boolean(url))
+        .slice(0, 5),
     });
   }
 
