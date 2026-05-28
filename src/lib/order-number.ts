@@ -5,7 +5,11 @@ import { randomBytes } from "crypto";
 // could view the order, so it MUST be unguessable. Combine with
 // orderNumber + phone last-4 for tracking page access.
 
-const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I/L
+const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O/1/I/L
+
+// Mirror the alphabet exactly so isValidOrderNumberFormat can't accept
+// codes generateOrderNumber would never produce.
+const ALPHABET_REGEX = new RegExp(`^SM-[${ALPHABET}]{8}$`);
 
 export function generateOrderNumber(): string {
   const bytes = randomBytes(8);
@@ -17,5 +21,5 @@ export function generateOrderNumber(): string {
 }
 
 export function isValidOrderNumberFormat(value: string): boolean {
-  return /^SM-[A-Z2-9]{8}$/.test(value);
+  return ALPHABET_REGEX.test(value);
 }

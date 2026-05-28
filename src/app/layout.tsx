@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { CartDrawer } from "@/components/commerce/cart-drawer";
 import { BottomTabs } from "@/components/commerce/bottom-tabs";
 import { MobileMenuDrawer } from "@/components/commerce/mobile-menu-drawer";
+import { InstallPrompt } from "@/components/commerce/install-prompt";
 import { SITE } from "@/config/site";
 import "./globals.css";
 
@@ -87,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <CartDrawer />
             <MobileMenuDrawer />
             <BottomTabs />
+            <InstallPrompt />
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>

@@ -37,6 +37,7 @@ export function Testimonials({ locale }: TestimonialsProps) {
       setSelected(emblaApi.selectedScrollSnap());
     };
     onSelect();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCount(emblaApi.scrollSnapList().length);
     emblaApi.on("select", onSelect);
     return () => {
