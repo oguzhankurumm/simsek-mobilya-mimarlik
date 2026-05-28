@@ -3,6 +3,7 @@ import { z } from "zod";
 import { del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -46,6 +47,15 @@ export async function PATCH(
   await prisma.order.update({
     where: { id: existing.id },
     data: { receiptImageUrl: parsed.data.receiptImageUrl },
+  });
+
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "ORDER_RECEIPT_PATCH",
+    resource: "order",
+    resourceId: orderNumber,
+    detail: { added: Boolean(parsed.data.receiptImageUrl) },
   });
 
   return NextResponse.json({ ok: true });

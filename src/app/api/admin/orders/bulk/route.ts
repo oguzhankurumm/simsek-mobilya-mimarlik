@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
 import { SITE } from "@/config/site";
 import { buildOrderStatusEmail, sendEmail } from "@/lib/send-email";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -71,6 +72,19 @@ export async function POST(req: Request) {
         }),
     );
   }
+
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "ORDER_BULK_PATCH",
+    resource: "order",
+    detail: {
+      newStatus: status,
+      count: updated.count,
+      notified,
+      notifyCustomers,
+    },
+  });
 
   return NextResponse.json({
     ok: true,

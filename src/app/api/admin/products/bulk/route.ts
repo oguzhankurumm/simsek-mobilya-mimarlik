@@ -3,6 +3,7 @@ import { z } from "zod";
 import { del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -40,6 +41,13 @@ export async function POST(req: Request) {
           }).catch(() => undefined),
         ),
     );
+    await logAdminAction({
+      admin: { id: admin.id, email: admin.email },
+      request: req,
+      action: "PRODUCT_BULK",
+      resource: "product",
+      detail: { action: "delete", count: productIds.length },
+    });
     return NextResponse.json({ ok: true, deleted: productIds.length });
   }
 
@@ -61,6 +69,13 @@ export async function POST(req: Request) {
   const updated = await prisma.product.updateMany({
     where: { id: { in: productIds } },
     data,
+  });
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "PRODUCT_BULK",
+    resource: "product",
+    detail: { action, count: updated.count },
   });
   return NextResponse.json({ ok: true, updated: updated.count });
 }

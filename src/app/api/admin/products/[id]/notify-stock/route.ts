@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
 import { SITE } from "@/config/site";
 import { buildStockBackInEmail, sendEmail } from "@/lib/send-email";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -13,7 +14,7 @@ export const runtime = "nodejs";
 // Marks them as notified so re-triggering doesn't double-send.
 
 export async function POST(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const admin = await getCurrentUser({ admin: true });
@@ -60,6 +61,15 @@ export async function POST(
   await prisma.stockNotification.updateMany({
     where: { productId: id, notifiedAt: null },
     data: { notifiedAt: new Date() },
+  });
+
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "PRODUCT_NOTIFY_STOCK",
+    resource: "product",
+    resourceId: id,
+    detail: { sent, total: pending.length },
   });
 
   return NextResponse.json({ ok: true, sent, total: pending.length });

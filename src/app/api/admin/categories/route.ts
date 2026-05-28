@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
 import { slugify } from "@/lib/utils";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -35,5 +36,14 @@ export async function POST(req: Request) {
       displayOrder: parsed.data.displayOrder,
     },
   });
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "CATEGORY_CREATE",
+    resource: "category",
+    resourceId: category.id,
+    detail: { name: parsed.data.name, slug },
+  });
+
   return NextResponse.json({ id: category.id });
 }

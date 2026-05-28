@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
 import { normalizeE164 } from "@/lib/whatsapp";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -27,6 +28,14 @@ export async function POST(req: Request) {
       ...parsed.data,
       numberE164: normalizeE164(parsed.data.number),
     },
+  });
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "WHATSAPP_CREATE",
+    resource: "whatsappLine",
+    resourceId: line.id,
+    detail: { label: parsed.data.label, number: parsed.data.number },
   });
   return NextResponse.json({ id: line.id });
 }

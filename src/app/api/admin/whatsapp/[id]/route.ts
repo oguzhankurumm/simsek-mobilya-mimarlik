@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
 import { normalizeE164 } from "@/lib/whatsapp";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -28,16 +29,31 @@ export async function PATCH(
   const data: Record<string, unknown> = { ...parsed.data };
   if (parsed.data.number) data.numberE164 = normalizeE164(parsed.data.number);
   await prisma.whatsappLine.update({ where: { id }, data });
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "WHATSAPP_PATCH",
+    resource: "whatsappLine",
+    resourceId: id,
+    detail: parsed.data,
+  });
   return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const admin = await getCurrentUser({ admin: true });
   if (!admin) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   const { id } = await params;
   await prisma.whatsappLine.delete({ where: { id } });
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "WHATSAPP_DELETE",
+    resource: "whatsappLine",
+    resourceId: id,
+  });
   return NextResponse.json({ ok: true });
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -27,11 +28,19 @@ export async function PATCH(
     return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
   }
   await prisma.category.update({ where: { id }, data: parsed.data });
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "CATEGORY_PATCH",
+    resource: "category",
+    resourceId: id,
+    detail: parsed.data,
+  });
   return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const admin = await getCurrentUser({ admin: true });
@@ -45,5 +54,12 @@ export async function DELETE(
     );
   }
   await prisma.category.delete({ where: { id } });
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "CATEGORY_DELETE",
+    resource: "category",
+    resourceId: id,
+  });
   return NextResponse.json({ ok: true });
 }

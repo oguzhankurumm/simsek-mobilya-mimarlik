@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -26,5 +27,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
   }
   const slide = await prisma.heroSlide.create({ data: parsed.data });
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "HERO_CREATE",
+    resource: "heroSlide",
+    resourceId: slide.id,
+    detail: { title: parsed.data.title },
+  });
   return NextResponse.json({ id: slide.id });
 }
