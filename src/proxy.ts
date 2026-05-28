@@ -7,8 +7,11 @@ export const config = {
   matcher: [
     // Match all pathnames except for
     // - API/internal routes
+    // - Admin routes (TR-only, no locale prefix — lives at /admin/*)
+    // - Commerce routes (TR-only by P2 — no locale prefix on /urunler, /sepet,
+    //   /odeme, /hesabim/*, /menu, /siparis-takibi, plus legal docs)
     // - Asset-like routes from Next.js metadata conventions (icon.tsx, etc.)
     // - Any path containing a dot (e.g. favicon.ico, robots.txt, sitemap.xml)
-    "/((?!api|_next|_vercel|icon|apple-icon|opengraph-image|manifest|.*\\..*).*)",
+    "/((?!api|admin|urunler|sepet|odeme|hesabim|menu|giris|kayit|sifremi-unuttum|siparis-takibi|mesafeli-satis-sozlesmesi|iade-politikasi|cayma-hakki|_next|_vercel|icon|apple-icon|opengraph-image|manifest|.*\\..*).*)",
   ],
 };
