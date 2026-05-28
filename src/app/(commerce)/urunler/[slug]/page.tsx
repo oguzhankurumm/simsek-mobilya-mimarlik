@@ -8,6 +8,8 @@ import { AddToCartButton } from "@/components/commerce/add-to-cart-button";
 import { WhatsappInquiryButton } from "@/components/commerce/whatsapp-inquiry-button";
 import { ProductCard } from "@/components/commerce/product-card";
 import { PdpGallery } from "@/components/commerce/pdp-gallery";
+import { WishlistButton } from "@/components/commerce/wishlist-button";
+import { StockNotificationModal } from "@/components/commerce/stock-notification-modal";
 
 export const revalidate = 60;
 
@@ -141,32 +143,41 @@ export default async function ProductDetailPage({ params }: PageProps) {
           {/* Sticky CTA wrapper — on mobile, this row sticks to bottom above
               the bottom tabs (env safe-area). On desktop, inline. */}
           <div className="flex flex-col gap-3 md:flex-row md:items-center">
-            <AddToCartButton
-              product={{
-                id: product.id,
-                name: product.name,
-                slug: product.slug,
-                originalPriceKurus: product.originalPriceKurus,
-                salePriceKurus: product.salePriceKurus,
-                image: product.images[0]?.url ?? "/placeholder-product.svg",
-                brand: product.brand,
-                stock: product.stock,
-                categorySlug: product.categorySlug,
-              }}
-              className="flex-1 md:flex-none md:px-10"
-            />
+            {product.stock > 0 ? (
+              <AddToCartButton
+                product={{
+                  id: product.id,
+                  name: product.name,
+                  slug: product.slug,
+                  originalPriceKurus: product.originalPriceKurus,
+                  salePriceKurus: product.salePriceKurus,
+                  image: product.images[0]?.url ?? "/placeholder-product.svg",
+                  brand: product.brand,
+                  stock: product.stock,
+                  categorySlug: product.categorySlug,
+                }}
+                className="flex-1 md:flex-none md:px-10"
+              />
+            ) : (
+              <StockNotificationModal
+                productId={product.id}
+                productName={product.name}
+              />
+            )}
             <WhatsappInquiryButton
               productName={product.name}
               productSlug={product.slug}
               className="flex-1 md:flex-none"
               variant="secondary"
             />
+            <WishlistButton productId={product.id} variant="labelled" />
           </div>
 
           {product.stock <= 0 ? (
             <p className="mt-1 text-xs text-ink-muted">
-              Bu ürün şu an stokta değil. Üretim/temin süresi için WhatsApp
-              üzerinden iletişime geçebilirsiniz.
+              Bu ürün şu an stokta değil. Bildirim alırsanız tekrar
+              stoklandığında size haber veririz; ya da WhatsApp üzerinden
+              üretim/temin süresini sorabilirsiniz.
             </p>
           ) : null}
         </div>

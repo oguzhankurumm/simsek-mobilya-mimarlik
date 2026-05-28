@@ -36,24 +36,56 @@ export interface PublicProduct {
 
 export let IS_DEMO_MODE = false;
 
+export type ProductSort = "yeni" | "fiyat-artan" | "fiyat-azalan" | "oneri";
+
 async function fetchProductsFromDb(opts?: {
   featured?: boolean;
   categorySlug?: string;
+  search?: string;
+  sort?: ProductSort;
   limit?: number;
 }): Promise<PublicProduct[]> {
+  const where = {
+    active: true,
+    ...(opts?.featured ? { featured: true } : {}),
+    ...(opts?.categorySlug
+      ? { category: { slug: opts.categorySlug } }
+      : {}),
+    ...(opts?.search
+      ? {
+          OR: [
+            { name: { contains: opts.search, mode: "insensitive" as const } },
+            { description: { contains: opts.search, mode: "insensitive" as const } },
+            { tags: { has: opts.search.toLowerCase() } },
+          ],
+        }
+      : {}),
+  };
+
+  const orderBy = (() => {
+    switch (opts?.sort) {
+      case "fiyat-artan":
+        return [{ salePrice: "asc" as const }];
+      case "fiyat-azalan":
+        return [{ salePrice: "desc" as const }];
+      case "yeni":
+        return [{ createdAt: "desc" as const }];
+      case "oneri":
+      default:
+        return [
+          { featured: "desc" as const },
+          { createdAt: "desc" as const },
+        ];
+    }
+  })();
+
   const products = await prisma.product.findMany({
-    where: {
-      active: true,
-      ...(opts?.featured ? { featured: true } : {}),
-      ...(opts?.categorySlug
-        ? { category: { slug: opts.categorySlug } }
-        : {}),
-    },
+    where,
     include: {
       category: true,
       images: { orderBy: { displayOrder: "asc" } },
     },
-    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+    orderBy,
     take: opts?.limit,
   });
 
@@ -84,6 +116,8 @@ async function fetchProductsFromDb(opts?: {
 export async function getProducts(opts?: {
   featured?: boolean;
   categorySlug?: string;
+  search?: string;
+  sort?: ProductSort;
   limit?: number;
 }): Promise<PublicProduct[]> {
   try {
@@ -105,6 +139,50 @@ export async function getProducts(opts?: {
     IS_DEMO_MODE = true;
     return filterMockProducts(MOCK_PRODUCTS, opts);
   }
+}
+
+export async function getCategoriesWithCounts(): Promise<
+  { name: string; slug: string; count: number }[]
+> {
+  try {
+    const rows = await prisma.category.findMany({
+      where: { active: true },
+      orderBy: { displayOrder: "asc" },
+      select: {
+        name: true,
+        slug: true,
+        _count: { select: { products: { where: { active: true } } } },
+      },
+    });
+    if (rows.length === 0) {
+      return mockCategoriesWithCounts();
+    }
+    return rows.map((r) => ({
+      name: r.name,
+      slug: r.slug,
+      count: r._count.products,
+    }));
+  } catch {
+    return mockCategoriesWithCounts();
+  }
+}
+
+function mockCategoriesWithCounts(): {
+  name: string;
+  slug: string;
+  count: number;
+}[] {
+  const counts = new Map<string, { name: string; count: number }>();
+  for (const p of MOCK_PRODUCTS) {
+    const existing = counts.get(p.categorySlug);
+    if (existing) existing.count++;
+    else counts.set(p.categorySlug, { name: p.categoryName, count: 1 });
+  }
+  return Array.from(counts.entries()).map(([slug, { name, count }]) => ({
+    slug,
+    name,
+    count,
+  }));
 }
 
 export async function getProductBySlug(
@@ -153,12 +231,44 @@ export async function getProductBySlug(
 
 function filterMockProducts(
   list: PublicProduct[],
-  opts?: { featured?: boolean; categorySlug?: string; limit?: number },
+  opts?: {
+    featured?: boolean;
+    categorySlug?: string;
+    search?: string;
+    sort?: ProductSort;
+    limit?: number;
+  },
 ): PublicProduct[] {
   let out = list;
   if (opts?.featured) out = out.filter((p) => p.featured);
   if (opts?.categorySlug)
     out = out.filter((p) => p.categorySlug === opts.categorySlug);
+  if (opts?.search) {
+    const q = opts.search.toLowerCase();
+    out = out.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.tags.some((t) => t.toLowerCase().includes(q)),
+    );
+  }
+  switch (opts?.sort) {
+    case "fiyat-artan":
+      out = [...out].sort((a, b) => a.salePriceKurus - b.salePriceKurus);
+      break;
+    case "fiyat-azalan":
+      out = [...out].sort((a, b) => b.salePriceKurus - a.salePriceKurus);
+      break;
+    case "yeni":
+      // Mock data has no createdAt; preserve insertion order.
+      break;
+    case "oneri":
+    default:
+      out = [...out].sort(
+        (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0),
+      );
+      break;
+  }
   if (opts?.limit) out = out.slice(0, opts.limit);
   return out;
 }

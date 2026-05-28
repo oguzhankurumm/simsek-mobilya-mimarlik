@@ -3,6 +3,7 @@ import Image from "next/image";
 import { formatPrice } from "@/lib/money";
 import type { PublicProduct } from "@/lib/products";
 import { cn } from "@/lib/utils";
+import { WishlistButton } from "./wishlist-button";
 
 // Product card — atelier-leaning, NOT Vivense-style. No red ribbons, no
 // "% indirim" badges by default. Discount shown as a struck-through old price
@@ -23,14 +24,16 @@ export function ProductCard({
   const isLowStock = product.stock > 0 && product.stock <= 2;
 
   return (
-    <Link
-      href={`/urunler/${product.slug}`}
+    <div
       className={cn(
         "group block",
         variant === "compact" ? "" : "space-y-3",
       )}
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-surface-2">
+      <Link
+        href={`/urunler/${product.slug}`}
+        className="relative block aspect-[4/5] overflow-hidden rounded-md bg-surface-2"
+      >
         <Image
           src={mainImage}
           alt={product.images[0]?.altText ?? product.name}
@@ -50,9 +53,15 @@ export function ProductCard({
             Son {product.stock} Adet
           </span>
         ) : null}
+      </Link>
+      <div className="-mt-12 mb-9 flex justify-end pr-2">
+        <WishlistButton
+          productId={product.id}
+          className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 md:opacity-100"
+        />
       </div>
 
-      <div className="space-y-1">
+      <Link href={`/urunler/${product.slug}`} className="block space-y-1">
         <p className="text-[10px] font-mono uppercase tracking-widest text-ink-faint">
           {product.categoryName}
         </p>
@@ -74,7 +83,7 @@ export function ProductCard({
             </span>
           ) : null}
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }

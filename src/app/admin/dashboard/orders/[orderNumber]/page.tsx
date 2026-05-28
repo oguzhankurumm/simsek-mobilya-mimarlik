@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { tlToKurus, formatPrice } from "@/lib/money";
 import { buildWhatsappUrl } from "@/lib/whatsapp";
 import { OrderStatusForm } from "@/components/admin/order-status-form";
+import { ReceiptUpload } from "@/components/admin/receipt-upload";
 
 export const dynamic = "force-dynamic";
 
@@ -137,6 +138,16 @@ export default async function OrderDetailPage({ params }: PageProps) {
               orderId={order.id}
               orderNumber={order.orderNumber}
               currentStatus={order.status}
+            />
+          </div>
+
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <p className="mb-3 text-[10px] uppercase tracking-widest text-zinc-500">
+              Dekont
+            </p>
+            <ReceiptUpload
+              orderNumber={order.orderNumber}
+              currentUrl={order.receiptImageUrl}
             />
           </div>
 
