@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -77,6 +78,15 @@ export async function POST(req: Request) {
           }
         : undefined,
     },
+  });
+
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "PRODUCT_CREATE",
+    resource: "product",
+    resourceId: product.id,
+    detail: { name: data.name, slug: data.slug },
   });
 
   return NextResponse.json({ id: product.id });

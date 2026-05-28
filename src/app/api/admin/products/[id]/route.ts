@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
 import { del } from "@vercel/blob";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -89,11 +90,20 @@ export async function PATCH(
     }
   }
 
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "PRODUCT_PATCH",
+    resource: "product",
+    resourceId: id,
+    detail: { name: data.name, slug: data.slug, stock: data.stock },
+  });
+
   return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const admin = await getCurrentUser({ admin: true });
@@ -116,5 +126,14 @@ export async function DELETE(
   );
 
   await prisma.product.delete({ where: { id } });
+
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "PRODUCT_DELETE",
+    resource: "product",
+    resourceId: id,
+  });
+
   return NextResponse.json({ ok: true });
 }

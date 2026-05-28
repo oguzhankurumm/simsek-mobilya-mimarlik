@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { tlToKurus, formatPrice } from "@/lib/money";
 import { ProductBulkTable } from "@/components/admin/product-bulk-table";
@@ -27,12 +27,20 @@ export default async function AdminProductsPage() {
           </p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">Ürünler</h1>
         </div>
-        <Link
-          href="/admin/dashboard/products/new"
-          className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          <Plus className="h-3.5 w-3.5" /> Yeni Ürün
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/admin/dashboard/products/import"
+            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 px-4 py-2 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          >
+            <Upload className="h-3.5 w-3.5" /> CSV İçe Aktar
+          </Link>
+          <Link
+            href="/admin/dashboard/products/new"
+            className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            <Plus className="h-3.5 w-3.5" /> Yeni Ürün
+          </Link>
+        </div>
       </header>
 
       <ProductBulkTable

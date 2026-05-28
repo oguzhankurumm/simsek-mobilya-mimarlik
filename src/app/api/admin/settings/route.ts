@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -39,5 +40,24 @@ export async function PATCH(req: Request) {
       freeShippingThreshold: new Prisma.Decimal(parsed.data.freeShippingThreshold),
     },
   });
+
+  // unstable_cache for PublicSiteSettings has a 5-minute revalidate window
+  // (see src/lib/site-settings.ts). Footer + checkout will pick up changes
+  // within that window; we deliberately don't manual-invalidate because
+  // Next 16's revalidateTag signature is in flux. If admins need immediate
+  // propagation they can hard-refresh.
+
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "SETTINGS_PATCH",
+    resource: "siteSettings",
+    detail: {
+      maintenanceMode: parsed.data.maintenanceMode,
+      vkn: parsed.data.vkn,
+      etbisNo: parsed.data.etbisNo,
+    },
+  });
+
   return NextResponse.json({ ok: true });
 }
