@@ -11,8 +11,11 @@ import {
   signToken,
 } from "@/lib/auth";
 import { normalizeE164 } from "@/lib/whatsapp";
+import { rateLimit, clientIpFromRequest } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
+
+const HOUR_MS = 60 * 60 * 1000;
 
 const bodySchema = z.object({
   email: z.string().email(),
@@ -22,6 +25,18 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  // 5 signups per hour per IP keeps abuse bots from creating throwaway
+  // accounts en masse without blocking a legit family signing up from
+  // the same WiFi.
+  const ip = clientIpFromRequest(req);
+  const ipLimit = rateLimit(`register:ip:${ip}`, 5, HOUR_MS);
+  if (!ipLimit.allowed) {
+    return NextResponse.json(
+      { error: "Çok fazla kayıt denemesi. Lütfen biraz bekleyin." },
+      { status: 429 },
+    );
+  }
+
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {

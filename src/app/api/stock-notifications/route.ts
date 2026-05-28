@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { normalizeE164 } from "@/lib/whatsapp";
+import { rateLimit, clientIpFromRequest } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
+const HOUR_MS = 60 * 60 * 1000;
 
 const bodySchema = z
   .object({
@@ -16,6 +18,17 @@ const bodySchema = z
   });
 
 export async function POST(req: Request) {
+  // 10 stock-notification signups per IP per hour — stops a bot from
+  // filling the notification table without blocking a household.
+  const ip = clientIpFromRequest(req);
+  const ipLimit = rateLimit(`stock-notify:ip:${ip}`, 10, HOUR_MS);
+  if (!ipLimit.allowed) {
+    return NextResponse.json(
+      { error: "Çok fazla istek. Birkaç dakika bekleyip tekrar deneyin." },
+      { status: 429 },
+    );
+  }
+
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {

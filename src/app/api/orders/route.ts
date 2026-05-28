@@ -14,6 +14,7 @@ import { getPublicSiteSettings } from "@/lib/site-settings";
 import { sendEmail, buildOrderConfirmationEmail } from "@/lib/send-email";
 import { tlToKurus, formatPrice } from "@/lib/money";
 import { buildWhatsappUrl } from "@/lib/whatsapp";
+import { rateLimit, clientIpFromRequest } from "@/lib/rate-limit";
 
 // POST /api/orders
 //
@@ -66,8 +67,18 @@ export async function POST(req: Request) {
   const originBlock = originGuard(req);
   if (originBlock) return originBlock;
 
-  // Maintenance mode short-circuits new orders. Admin can still place orders
-  // (they wouldn't be on the public site anyway, but defensively safe).
+  // 30 orders per hour per IP is generous for a household ordering multiple
+  // items but cuts off bot-driven stock-grabbing attempts.
+  const ip = clientIpFromRequest(req);
+  const ipLimit = rateLimit(`orders:ip:${ip}`, 30, 60 * 60 * 1000);
+  if (!ipLimit.allowed) {
+    return NextResponse.json(
+      { error: "Çok fazla sipariş denemesi. Lütfen birkaç dakika bekleyin." },
+      { status: 429 },
+    );
+  }
+
+  // Maintenance mode short-circuits new orders.
   const settings = await getPublicSiteSettings();
   if (settings.maintenanceMode) {
     return NextResponse.json(

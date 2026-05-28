@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
 import { SITE } from "@/config/site";
 import { buildOrderStatusEmail, sendEmail } from "@/lib/send-email";
+import { logAdminAction } from "@/lib/audit-log";
 
 export const runtime = "nodejs";
 
@@ -61,6 +62,15 @@ export async function PATCH(
   if (updated.count === 0) {
     return NextResponse.json({ error: "Sipariş bulunamadı" }, { status: 404 });
   }
+
+  await logAdminAction({
+    admin: { id: admin.id, email: admin.email },
+    request: req,
+    action: "ORDER_STATUS_PATCH",
+    resource: "order",
+    resourceId: orderNumber,
+    detail: { from: existing.status, to: parsed.data.status },
+  });
 
   if (existing.status !== parsed.data.status) {
     const recipient = existing.user?.email ?? existing.guestEmail ?? null;

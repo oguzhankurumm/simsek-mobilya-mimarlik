@@ -14,6 +14,7 @@ import {
   Settings,
   Bell,
   BarChart3,
+  Activity,
   LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -35,6 +36,7 @@ const ADMIN_LINKS = [
   { href: "/admin/dashboard/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { href: "/admin/dashboard/hero", label: "Hero Slides", icon: ImageIcon },
   { href: "/admin/dashboard/settings", label: "Ayarlar", icon: Settings },
+  { href: "/admin/dashboard/activity", label: "Aktivite", icon: Activity },
 ];
 
 export function AdminSidebar() {

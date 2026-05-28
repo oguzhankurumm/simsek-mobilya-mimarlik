@@ -281,3 +281,19 @@ model PasswordReset {
   @@index([codeHash])
   @@index([expiresAt])
 }
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  adminEmail String
+  action     String   // e.g. "ORDER_STATUS_PATCH" or "PRODUCT_DELETE"
+  resource   String   // table name like "order"
+  resourceId String?  // id of the row touched
+  detail     String?  // free-form context (JSON-encoded summary)
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([adminId, createdAt])
+  @@index([resource, resourceId])
+  @@index([createdAt])
+}

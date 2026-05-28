@@ -12,8 +12,11 @@ import {
   signToken,
   verifyPassword,
 } from "@/lib/auth";
+import { rateLimit, clientIpFromRequest } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
+
+const FIFTEEN_MIN_MS = 15 * 60 * 1000;
 
 const bodySchema = z.object({
   email: z.string().email(),
@@ -23,6 +26,17 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  // 20 attempts per 15 minutes per IP defeats credential-stuffing without
+  // blocking real users on shared NATs.
+  const ip = clientIpFromRequest(req);
+  const ipLimit = rateLimit(`login:ip:${ip}`, 20, FIFTEEN_MIN_MS);
+  if (!ipLimit.allowed) {
+    return NextResponse.json(
+      { error: "Çok fazla deneme. Lütfen birkaç dakika bekleyin." },
+      { status: 429 },
+    );
+  }
+
   const json = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
@@ -32,6 +46,23 @@ export async function POST(req: Request) {
     );
   }
   const { email, password, admin } = parsed.data;
+
+  // Per-email limit on top of per-IP: 5 wrong tries / 15min slows a
+  // targeted attack against a known user without locking them out
+  // entirely. Successful login doesn't bypass this — the bucket counts
+  // every attempt, which is fine because a real user logs in once per
+  // session.
+  const emailLimit = rateLimit(
+    `login:email:${email.toLowerCase()}`,
+    10,
+    FIFTEEN_MIN_MS,
+  );
+  if (!emailLimit.allowed) {
+    return NextResponse.json(
+      { error: "Çok fazla deneme. Birkaç dakika sonra tekrar deneyin." },
+      { status: 429 },
+    );
+  }
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
