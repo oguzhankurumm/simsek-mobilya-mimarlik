@@ -97,11 +97,15 @@ export async function POST(req: Request) {
   const tokenHash = sha256(rawToken);
   const expiresAt = new Date(Date.now() + ttlDays * 24 * 60 * 60 * 1000);
 
-  await prisma.session.create({
+  const session = await prisma.session.create({
     data: { userId: user.id, tokenHash, expiresAt },
   });
 
-  const jwt = await signToken({ userId: user.id, role: user.role }, ttlDays);
+  // Bind the JWT to this session row so logout / password-reset can revoke it.
+  const jwt = await signToken(
+    { userId: user.id, role: user.role, sid: session.id },
+    ttlDays,
+  );
 
   const cookieName = admin ? ADMIN_COOKIE_NAME : AUTH_COOKIE_NAME;
   (await cookies()).set(cookieName, jwt, {

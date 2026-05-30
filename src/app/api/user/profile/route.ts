@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
 import {
+  AUTH_COOKIE_NAME,
   hashPassword,
-  sha256,
   verifyPassword,
+  verifyToken,
 } from "@/lib/auth";
 import { normalizeE164 } from "@/lib/whatsapp";
 
@@ -67,22 +69,26 @@ export async function PUT(req: Request) {
     );
   }
 
-  await prisma.user.update({
-    where: { id: me.id },
-    data: { passwordHash: await hashPassword(parsed.data.newPassword) },
+  const passwordHash = await hashPassword(parsed.data.newPassword);
+
+  // Identify the current session so we keep the user logged in on THIS device
+  // while revoking every other session (now actually enforced — see
+  // verifySession). One transaction so a failed purge can't leave the password
+  // changed but other sessions alive, or vice-versa.
+  const currentToken = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
+  const currentSid = currentToken
+    ? (await verifyToken(currentToken))?.sid
+    : undefined;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: me.id }, data: { passwordHash } });
+    await tx.session.deleteMany({
+      where: {
+        userId: me.id,
+        ...(currentSid ? { id: { not: currentSid } } : {}),
+      },
+    });
   });
-
-  // Invalidate other sessions on password change.
-  // (We don't touch the current cookie — the user is actively using it.)
-  // Match by token hash != current would be ideal but we don't know which
-  // session belongs to this cookie; the deleteMany is intentionally broad.
-  await prisma.session
-    .deleteMany({ where: { userId: me.id } })
-    .catch(() => undefined);
-
-  // Touch sha256 import so the file's lint stays happy if PUT is the only
-  // path that uses it.
-  void sha256;
 
   return NextResponse.json({ ok: true });
 }
