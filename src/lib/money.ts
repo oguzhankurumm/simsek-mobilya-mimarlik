@@ -8,7 +8,12 @@ export const KURUS_PER_TL = 100;
 
 export function tlToKurus(tl: number | string | Prisma.Decimal): number {
   const n = typeof tl === "number" ? tl : Number(tl);
-  if (!Number.isFinite(n)) return 0;
+  if (!Number.isFinite(n)) {
+    // A corrupted price must not silently become a free (0,00 ₺) item in an
+    // email or on a product page. Surface it; the 0 keeps callers from throwing.
+    console.error("[money] tlToKurus received a non-finite value:", tl);
+    return 0;
+  }
   // Math.round to dodge sub-cent float drift on conversion.
   return Math.round(n * KURUS_PER_TL);
 }
