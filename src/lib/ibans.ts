@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "./prisma";
+import { DEMO_DATA_ENABLED, logDbFallback } from "./demo-mode";
 
 export interface PublicIban {
   id: string;
@@ -32,7 +33,9 @@ export async function getActiveIbans(): Promise<PublicIban[]> {
       where: { active: true },
       orderBy: { displayOrder: "asc" },
     });
-    if (rows.length === 0) return MOCK_IBANS;
+    // Empty/unreachable DB must NOT show a fake IBAN (TR00 0000…) in prod — a
+    // customer could pay into a non-existent account. Demo data is dev-only.
+    if (rows.length === 0) return DEMO_DATA_ENABLED ? MOCK_IBANS : [];
     return rows.map((r) => ({
       id: r.id,
       title: r.title,
@@ -40,7 +43,8 @@ export async function getActiveIbans(): Promise<PublicIban[]> {
       accountHolder: r.accountHolder,
       ibanNumber: r.ibanNumber,
     }));
-  } catch {
-    return MOCK_IBANS;
+  } catch (err) {
+    logDbFallback("ibans", err);
+    return DEMO_DATA_ENABLED ? MOCK_IBANS : [];
   }
 }

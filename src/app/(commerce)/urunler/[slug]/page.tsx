@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { getProductBySlug, getProducts, IS_DEMO_MODE } from "@/lib/products";
+import {
+  getProductBySlug,
+  getProductBySlugResult,
+  getProducts,
+} from "@/lib/products";
 import { formatPrice } from "@/lib/money";
 import { AddToCartButton } from "@/components/commerce/add-to-cart-button";
 import { WhatsappInquiryButton } from "@/components/commerce/whatsapp-inquiry-button";
@@ -41,7 +45,7 @@ export async function generateMetadata({
 
 export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const { product, isDemo } = await getProductBySlugResult(slug);
   if (!product) notFound();
 
   // Related products from same category (excluding current).
@@ -64,7 +68,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     <section className="container-editorial py-6 md:py-12">
       <ProductJsonLd product={product} />
       <TrackProductView slug={product.slug} />
-      {IS_DEMO_MODE ? (
+      {isDemo ? (
         <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
           Demo veri — gerçek katalog için DB bağlayın ve seed çalıştırın.
         </div>

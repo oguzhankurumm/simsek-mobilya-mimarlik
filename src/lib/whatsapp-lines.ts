@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "./prisma";
+import { DEMO_DATA_ENABLED, logDbFallback } from "./demo-mode";
 
 export interface PublicWhatsappLine {
   id: string;
@@ -21,14 +22,15 @@ export async function getActiveWhatsappLine(): Promise<PublicWhatsappLine | null
       where: { active: true },
       orderBy: { displayOrder: "asc" },
     });
-    if (!row) return MOCK_WHATSAPP_LINE;
+    if (!row) return DEMO_DATA_ENABLED ? MOCK_WHATSAPP_LINE : null;
     return {
       id: row.id,
       label: row.label,
       number: row.number,
       numberE164: row.numberE164,
     };
-  } catch {
-    return MOCK_WHATSAPP_LINE;
+  } catch (err) {
+    logDbFallback("whatsapp-lines", err);
+    return DEMO_DATA_ENABLED ? MOCK_WHATSAPP_LINE : null;
   }
 }

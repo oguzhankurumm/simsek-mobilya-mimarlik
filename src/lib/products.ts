@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import { tlToKurus } from "./money";
+import { DEMO_DATA_ENABLED, logDbFallback } from "./demo-mode";
 
 // Public-facing product shape. All prices in INTEGER kuruş. Created by
 // converting Prisma's Decimal at the boundary so the UI never touches
@@ -29,14 +30,23 @@ export interface PublicProduct {
   tags: string[];
 }
 
-// During Phase A/B development the DB may not exist yet. We swallow Prisma
-// errors and serve a small curated catalog so the UI can be built and tested
-// without provisioning Neon first. Production must have a DB — see
-// IS_DEMO_MODE export below.
-
-export let IS_DEMO_MODE = false;
+// Demo-catalog fallback lives in lib/demo-mode.ts (DEMO_DATA_ENABLED). Demo
+// state is RETURNED per call (getProductsResult / getProductBySlugResult) — the
+// old `export let IS_DEMO_MODE` was a module-level mutable flag mutated during
+// async render, which races: request A's DB success could flip the banner off
+// for request B mid-render.
 
 export type ProductSort = "yeni" | "fiyat-artan" | "fiyat-azalan" | "oneri";
+
+export type ProductQuery = {
+  featured?: boolean;
+  categorySlug?: string;
+  search?: string;
+  sort?: ProductSort;
+  limit?: number;
+};
+
+export type ProductsResult = { products: PublicProduct[]; isDemo: boolean };
 
 async function fetchProductsFromDb(opts?: {
   featured?: boolean;
@@ -113,32 +123,28 @@ async function fetchProductsFromDb(opts?: {
   }));
 }
 
-export async function getProducts(opts?: {
-  featured?: boolean;
-  categorySlug?: string;
-  search?: string;
-  sort?: ProductSort;
-  limit?: number;
-}): Promise<PublicProduct[]> {
+export async function getProductsResult(
+  opts?: ProductQuery,
+): Promise<ProductsResult> {
   try {
     const dbProducts = await fetchProductsFromDb(opts);
-    if (dbProducts.length > 0) {
-      IS_DEMO_MODE = false;
-      return dbProducts;
-    }
-    // Empty DB → fall through to demo mode so the page is never blank in dev.
-    IS_DEMO_MODE = true;
-    return filterMockProducts(MOCK_PRODUCTS, opts);
+    if (dbProducts.length > 0) return { products: dbProducts, isDemo: false };
+    // Empty DB: demo catalog in dev, empty in prod (never fake products).
+    if (!DEMO_DATA_ENABLED) return { products: [], isDemo: false };
+    return { products: filterMockProducts(MOCK_PRODUCTS, opts), isDemo: true };
   } catch (err) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn(
-        "[products] Prisma unavailable, serving demo catalog. Provision DATABASE_URL + run db:migrate + db:seed.",
-        (err as Error).message,
-      );
-    }
-    IS_DEMO_MODE = true;
-    return filterMockProducts(MOCK_PRODUCTS, opts);
+    logDbFallback("products", err);
+    if (!DEMO_DATA_ENABLED) return { products: [], isDemo: false };
+    return { products: filterMockProducts(MOCK_PRODUCTS, opts), isDemo: true };
   }
+}
+
+// Convenience wrapper for callers that don't render the demo banner (sitemap,
+// related products, featured strip).
+export async function getProducts(
+  opts?: ProductQuery,
+): Promise<PublicProduct[]> {
+  return (await getProductsResult(opts)).products;
 }
 
 export async function getCategoriesWithCounts(): Promise<
@@ -155,15 +161,16 @@ export async function getCategoriesWithCounts(): Promise<
       },
     });
     if (rows.length === 0) {
-      return mockCategoriesWithCounts();
+      return DEMO_DATA_ENABLED ? mockCategoriesWithCounts() : [];
     }
     return rows.map((r) => ({
       name: r.name,
       slug: r.slug,
       count: r._count.products,
     }));
-  } catch {
-    return mockCategoriesWithCounts();
+  } catch (err) {
+    logDbFallback("categories", err);
+    return DEMO_DATA_ENABLED ? mockCategoriesWithCounts() : [];
   }
 }
 
@@ -185,9 +192,9 @@ function mockCategoriesWithCounts(): {
   }));
 }
 
-export async function getProductBySlug(
+export async function getProductBySlugResult(
   slug: string,
-): Promise<PublicProduct | null> {
+): Promise<{ product: PublicProduct | null; isDemo: boolean }> {
   try {
     const product = await prisma.product.findUnique({
       where: { slug, active: true },
@@ -196,37 +203,49 @@ export async function getProductBySlug(
         images: { orderBy: { displayOrder: "asc" } },
       },
     });
-    if (!product) return null;
-    IS_DEMO_MODE = false;
+    if (!product) return { product: null, isDemo: false };
     return {
-      id: product.id,
-      slug: product.slug,
-      name: product.name,
-      brand: product.brand,
-      description: product.description,
-      categorySlug: product.category.slug,
-      categoryName: product.category.name,
-      originalPriceKurus: tlToKurus(product.originalPrice.toString()),
-      salePriceKurus: tlToKurus(product.salePrice.toString()),
-      discountPercent: product.discountPercent,
-      stock: product.stock,
-      featured: product.featured,
-      images: product.images.map((img) => ({
-        url: img.url,
-        altText: img.altText,
-      })),
-      widthCm: product.widthCm,
-      depthCm: product.depthCm,
-      heightCm: product.heightCm,
-      material: product.material,
-      color: product.color,
-      room: product.room,
-      tags: product.tags,
+      product: {
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        brand: product.brand,
+        description: product.description,
+        categorySlug: product.category.slug,
+        categoryName: product.category.name,
+        originalPriceKurus: tlToKurus(product.originalPrice.toString()),
+        salePriceKurus: tlToKurus(product.salePrice.toString()),
+        discountPercent: product.discountPercent,
+        stock: product.stock,
+        featured: product.featured,
+        images: product.images.map((img) => ({
+          url: img.url,
+          altText: img.altText,
+        })),
+        widthCm: product.widthCm,
+        depthCm: product.depthCm,
+        heightCm: product.heightCm,
+        material: product.material,
+        color: product.color,
+        room: product.room,
+        tags: product.tags,
+      },
+      isDemo: false,
     };
-  } catch {
-    IS_DEMO_MODE = true;
-    return MOCK_PRODUCTS.find((p) => p.slug === slug) ?? null;
+  } catch (err) {
+    logDbFallback("products", err);
+    if (!DEMO_DATA_ENABLED) return { product: null, isDemo: false };
+    return {
+      product: MOCK_PRODUCTS.find((p) => p.slug === slug) ?? null,
+      isDemo: true,
+    };
   }
+}
+
+export async function getProductBySlug(
+  slug: string,
+): Promise<PublicProduct | null> {
+  return (await getProductBySlugResult(slug)).product;
 }
 
 function filterMockProducts(

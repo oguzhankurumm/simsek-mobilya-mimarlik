@@ -36,9 +36,10 @@ const STEPS = ["Sepet Özeti", "Ödeme Bilgileri", "Dekont Gönder"] as const;
 interface CheckoutFlowProps {
   ibans: IbanCardData[];
   whatsapp: PublicWhatsappLine | null;
+  isGuest: boolean;
 }
 
-export function CheckoutFlow({ ibans, whatsapp }: CheckoutFlowProps) {
+export function CheckoutFlow({ ibans, whatsapp, isGuest }: CheckoutFlowProps) {
   const router = useRouter();
 
   const { items, totalKurus, savingsKurus } = useCartStore(
@@ -64,6 +65,10 @@ export function CheckoutFlow({ ibans, whatsapp }: CheckoutFlowProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedIbanId, setSelectedIbanId] = useState<string | null>(null);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  // Guest contact (only collected/sent when not logged in).
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdOrderNumber, setCreatedOrderNumber] = useState<string | null>(
@@ -86,6 +91,14 @@ export function CheckoutFlow({ ibans, whatsapp }: CheckoutFlowProps) {
       );
       return;
     }
+    if (
+      isGuest &&
+      (guestName.trim().length < 2 ||
+        guestPhone.replace(/\D+/g, "").length < 8)
+    ) {
+      setSubmitError("Lütfen adınızı ve geçerli bir telefon numarası girin.");
+      return;
+    }
 
     setIsSubmitting(true);
     setSubmitError(null);
@@ -104,6 +117,15 @@ export function CheckoutFlow({ ibans, whatsapp }: CheckoutFlowProps) {
           ibanId: selectedIbanId,
           whatsappLineId: whatsapp?.id ?? null,
           acceptedTerms: true,
+          ...(isGuest
+            ? {
+                guestName: guestName.trim(),
+                guestPhone: guestPhone.trim(),
+                ...(guestEmail.trim()
+                  ? { guestEmail: guestEmail.trim() }
+                  : {}),
+              }
+            : {}),
         }),
       });
 
@@ -160,6 +182,22 @@ export function CheckoutFlow({ ibans, whatsapp }: CheckoutFlowProps) {
             onSubmit={handleSubmitOrder}
             onBack={() => setCurrentStep(1)}
             total={displayTotal}
+            isGuest={isGuest}
+            guestName={guestName}
+            guestPhone={guestPhone}
+            guestEmail={guestEmail}
+            onGuestNameChange={(v) => {
+              setGuestName(v);
+              setSubmitError(null);
+            }}
+            onGuestPhoneChange={(v) => {
+              setGuestPhone(v);
+              setSubmitError(null);
+            }}
+            onGuestEmailChange={(v) => {
+              setGuestEmail(v);
+              setSubmitError(null);
+            }}
           />
         ) : null}
 
@@ -336,6 +374,13 @@ function Step2({
   onSubmit,
   onBack,
   total,
+  isGuest,
+  guestName,
+  guestPhone,
+  guestEmail,
+  onGuestNameChange,
+  onGuestPhoneChange,
+  onGuestEmailChange,
 }: {
   ibans: IbanCardData[];
   selectedIbanId: string | null;
@@ -347,6 +392,13 @@ function Step2({
   onSubmit: () => void;
   onBack: () => void;
   total: number;
+  isGuest: boolean;
+  guestName: string;
+  guestPhone: string;
+  guestEmail: string;
+  onGuestNameChange: (v: string) => void;
+  onGuestPhoneChange: (v: string) => void;
+  onGuestEmailChange: (v: string) => void;
 }) {
   return (
     <div className="flex flex-col gap-5">
@@ -359,6 +411,45 @@ function Step2({
           <strong className="tabular-nums">{formatPrice(total)}</strong>.
         </p>
       </div>
+
+      {isGuest ? (
+        <div className="flex flex-col gap-3">
+          <p className="text-xs uppercase tracking-wide text-ink-faint">
+            İletişim Bilgileri
+          </p>
+          <input
+            type="text"
+            value={guestName}
+            onChange={(e) => onGuestNameChange(e.target.value)}
+            placeholder="Ad Soyad"
+            autoComplete="name"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-brand"
+          />
+          <input
+            type="tel"
+            value={guestPhone}
+            onChange={(e) => onGuestPhoneChange(e.target.value)}
+            placeholder="Telefon (sipariş takibi için)"
+            autoComplete="tel"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-brand"
+          />
+          <input
+            type="email"
+            value={guestEmail}
+            onChange={(e) => onGuestEmailChange(e.target.value)}
+            placeholder="E-posta (opsiyonel — sipariş onayı için)"
+            autoComplete="email"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-brand"
+          />
+          <p className="text-[11px] text-ink-faint">
+            Hesabınız varsa{" "}
+            <Link href="/giris" className="text-brand underline">
+              giriş yapın
+            </Link>{" "}
+            — siparişleriniz hesabınızda görünür.
+          </p>
+        </div>
+      ) : null}
 
       <div>
         <p className="mb-2 text-xs uppercase tracking-wide text-ink-faint">

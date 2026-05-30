@@ -25,15 +25,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
   }
 
-  if (parsed.data.isDefault) {
-    await prisma.address.updateMany({
-      where: { userId: me.id, isDefault: true },
-      data: { isDefault: false },
-    });
-  }
-
-  const created = await prisma.address.create({
-    data: { ...parsed.data, userId: me.id },
+  // Clear-old-default + create in one transaction so a mid-way failure can't
+  // leave the user with zero default addresses.
+  const created = await prisma.$transaction(async (tx) => {
+    if (parsed.data.isDefault) {
+      await tx.address.updateMany({
+        where: { userId: me.id, isDefault: true },
+        data: { isDefault: false },
+      });
+    }
+    return tx.address.create({ data: { ...parsed.data, userId: me.id } });
   });
   return NextResponse.json({ id: created.id });
 }

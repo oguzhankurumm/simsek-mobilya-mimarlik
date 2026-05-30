@@ -47,7 +47,13 @@ export const getPublicSiteSettings = unstable_cache(
         ),
         maintenanceMode: s.maintenanceMode,
       };
-    } catch {
+    } catch (err) {
+      // Defaults are safe blanks (not fake data), but a prod outage should
+      // still be visible rather than silently degrading the legal footer.
+      console.error(
+        "[site-settings] DB unavailable; serving blank defaults.",
+        err instanceof Error ? err.message : "",
+      );
       return DEFAULTS;
     }
   },
