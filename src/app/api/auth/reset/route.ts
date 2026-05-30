@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   // attacker who knows an email can brute-force it inside the 15-minute window.
   // 10/hour/IP + 5/hour/email throttles that to nothing.
   const ip = clientIpFromRequest(req);
-  if (!rateLimit(`reset:ip:${ip}`, 10, HOUR_MS).allowed) {
+  if (!(await rateLimit(`reset:ip:${ip}`, 10, HOUR_MS)).allowed) {
     return NextResponse.json(
       { error: "Çok fazla deneme. Lütfen biraz bekleyin." },
       { status: 429 },
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   }
   const { email, code, newPassword } = parsed.data;
 
-  if (!rateLimit(`reset:email:${email.toLowerCase()}`, 5, HOUR_MS).allowed) {
+  if (!(await rateLimit(`reset:email:${email.toLowerCase()}`, 5, HOUR_MS)).allowed) {
     return NextResponse.json(
       { error: "Çok fazla deneme. Birkaç dakika sonra tekrar deneyin." },
       { status: 429 },

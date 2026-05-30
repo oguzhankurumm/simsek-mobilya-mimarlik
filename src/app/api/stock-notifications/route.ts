@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   // 10 stock-notification signups per IP per hour — stops a bot from
   // filling the notification table without blocking a household.
   const ip = clientIpFromRequest(req);
-  const ipLimit = rateLimit(`stock-notify:ip:${ip}`, 10, HOUR_MS);
+  const ipLimit = await rateLimit(`stock-notify:ip:${ip}`, 10, HOUR_MS);
   if (!ipLimit.allowed) {
     return NextResponse.json(
       { error: "Çok fazla istek. Birkaç dakika bekleyip tekrar deneyin." },

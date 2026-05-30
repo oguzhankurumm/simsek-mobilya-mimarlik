@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   // accounts en masse without blocking a legit family signing up from
   // the same WiFi.
   const ip = clientIpFromRequest(req);
-  const ipLimit = rateLimit(`register:ip:${ip}`, 5, HOUR_MS);
+  const ipLimit = await rateLimit(`register:ip:${ip}`, 5, HOUR_MS);
   if (!ipLimit.allowed) {
     return NextResponse.json(
       { error: "Çok fazla kayıt denemesi. Lütfen biraz bekleyin." },

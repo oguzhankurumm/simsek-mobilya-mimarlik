@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   // 10/hour/IP limit defeats wholesale enumeration; 3/hour/email limit
   // defeats targeted spam.
   const ip = clientIpFromRequest(req);
-  const ipLimit = rateLimit(`forgot:ip:${ip}`, 10, HOUR_MS);
+  const ipLimit = await rateLimit(`forgot:ip:${ip}`, 10, HOUR_MS);
   if (!ipLimit.allowed) {
     return NextResponse.json(
       { error: "Çok fazla istek. Lütfen biraz bekleyin." },
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   }
   const { email } = parsed.data;
 
-  const emailLimit = rateLimit(`forgot:email:${email.toLowerCase()}`, 3, HOUR_MS);
+  const emailLimit = await rateLimit(`forgot:email:${email.toLowerCase()}`, 3, HOUR_MS);
   if (!emailLimit.allowed) {
     // Same response shape as success — don't leak that this email exists.
     return NextResponse.json({ ok: true });

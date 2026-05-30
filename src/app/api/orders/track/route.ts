@@ -17,7 +17,7 @@ export async function GET(req: Request) {
   // would otherwise be brute-forceable. Rate limit per IP and per order number
   // (uniform 404 on the per-order cap so it doesn't reveal the order exists).
   const ip = clientIpFromRequest(req);
-  if (!rateLimit(`track:ip:${ip}`, 20, HOUR_MS).allowed) {
+  if (!(await rateLimit(`track:ip:${ip}`, 20, HOUR_MS)).allowed) {
     return NextResponse.json(
       { error: "Çok fazla deneme. Lütfen biraz bekleyin." },
       { status: 429 },
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
     );
   }
 
-  if (!rateLimit(`track:order:${orderNumber}`, 10, HOUR_MS).allowed) {
+  if (!(await rateLimit(`track:order:${orderNumber}`, 10, HOUR_MS)).allowed) {
     return NextResponse.json({ error: "Sipariş bulunamadı" }, { status: 404 });
   }
 
