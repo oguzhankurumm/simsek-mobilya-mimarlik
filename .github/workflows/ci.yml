@@ -70,7 +70,10 @@ jobs:
       - name: Seed
         run: npm run db:seed
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        # No --with-deps: it runs apt-get, which hangs on the ubuntu-latest
+        # runner's apt lock (unattended-upgrades). The runner image already
+        # ships chromium's system libs, so a plain install is fast and reliable.
+        run: npx playwright install chromium
       # playwright.config.ts webServer runs `npm run build && npm run start`
       # itself (reuseExistingServer is false in CI), so no separate build step.
       - name: Run Playwright
