@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
 
@@ -68,11 +69,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
   }
 
-  await prisma.wishlist
-    .create({
+  try {
+    await prisma.wishlist.create({
       data: { userId: user.id, productId: parsed.data.productId },
-    })
-    .catch(() => undefined); // Duplicate is fine.
+    });
+  } catch (err) {
+    // Already wishlisted (unique violation) is idempotently fine; any other
+    // error (bad productId FK, DB down) is real and the client must see it.
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      return NextResponse.json({ ok: true });
+    }
+    console.error("WISHLIST_ADD_ERROR", err);
+    return NextResponse.json(
+      { error: "Favorilere eklenemedi" },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }
@@ -96,11 +111,17 @@ export async function DELETE(req: Request) {
     );
   }
 
-  await prisma.wishlist
-    .deleteMany({
+  try {
+    await prisma.wishlist.deleteMany({
       where: { userId: user.id, productId },
-    })
-    .catch(() => undefined);
+    });
+  } catch (err) {
+    console.error("WISHLIST_REMOVE_ERROR", err);
+    return NextResponse.json(
+      { error: "Favorilerden çıkarılamadı" },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

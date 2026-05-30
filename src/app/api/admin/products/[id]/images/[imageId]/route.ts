@@ -29,17 +29,30 @@ export async function PATCH(
     return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
   }
 
-  // Promote to main: clear other isMain first to keep the invariant.
-  if (parsed.data.isMain === true) {
-    await prisma.productImage.updateMany({
-      where: { productId: id, isMain: true },
-      data: { isMain: false },
-    });
+  // Verify the image belongs to THIS product before touching it. Without this
+  // the `where: { id: imageId }` update lets an admin mutate another product's
+  // image by passing a foreign imageId in the URL (cross-product IDOR).
+  const owned = await prisma.productImage.findFirst({
+    where: { id: imageId, productId: id },
+    select: { id: true },
+  });
+  if (!owned) {
+    return NextResponse.json({ error: "Görsel bulunamadı" }, { status: 404 });
   }
 
-  await prisma.productImage.update({
-    where: { id: imageId },
-    data: parsed.data,
+  // Clear-other-mains + this update in one transaction so we never leave a
+  // product with zero (or two) main images mid-flight.
+  await prisma.$transaction(async (tx) => {
+    if (parsed.data.isMain === true) {
+      await tx.productImage.updateMany({
+        where: { productId: id, isMain: true },
+        data: { isMain: false },
+      });
+    }
+    await tx.productImage.update({
+      where: { id: imageId },
+      data: parsed.data,
+    });
   });
 
   await logAdminAction({

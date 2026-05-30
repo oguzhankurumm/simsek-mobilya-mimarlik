@@ -11,7 +11,6 @@ export async function GET() {
   const startedAt = Date.now();
   let dbStatus: "ok" | "down" = "down";
   let dbLatencyMs: number | null = null;
-  let dbError: string | null = null;
 
   try {
     const dbStart = Date.now();
@@ -20,7 +19,9 @@ export async function GET() {
     dbLatencyMs = Date.now() - dbStart;
     dbStatus = "ok";
   } catch (err) {
-    dbError = err instanceof Error ? err.message.slice(0, 200) : "unknown";
+    // Log the detail server-side; the public body stays coarse so we don't leak
+    // DB provider / connection internals to anonymous callers.
+    console.error("HEALTH_DB_ERROR", err);
   }
 
   const body = {
@@ -30,7 +31,6 @@ export async function GET() {
     db: {
       status: dbStatus,
       latency_ms: dbLatencyMs,
-      ...(dbError ? { error: dbError } : {}),
     },
     runtime: "nodejs",
     node_env: process.env.NODE_ENV,

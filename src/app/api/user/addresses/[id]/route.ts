@@ -38,14 +38,17 @@ export async function PATCH(
     return NextResponse.json({ error: "Adres bulunamadı" }, { status: 404 });
   }
 
-  if (parsed.data.isDefault) {
-    await prisma.address.updateMany({
-      where: { userId: me.id, isDefault: true, NOT: { id } },
-      data: { isDefault: false },
-    });
-  }
-
-  await prisma.address.update({ where: { id }, data: parsed.data });
+  // Clear-old-default + update in one transaction — no window where the user
+  // has zero or two default addresses.
+  await prisma.$transaction(async (tx) => {
+    if (parsed.data.isDefault) {
+      await tx.address.updateMany({
+        where: { userId: me.id, isDefault: true, NOT: { id } },
+        data: { isDefault: false },
+      });
+    }
+    await tx.address.update({ where: { id }, data: parsed.data });
+  });
   return NextResponse.json({ ok: true });
 }
 

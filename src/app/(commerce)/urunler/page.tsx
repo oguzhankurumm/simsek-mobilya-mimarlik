@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import {
   getCategoriesWithCounts,
-  getProducts,
-  IS_DEMO_MODE,
+  getProductsResult,
   type ProductSort,
 } from "@/lib/products";
 import { ProductCard } from "@/components/commerce/product-card";
@@ -44,14 +43,15 @@ export default async function ProductsPage({ searchParams }: PageProps) {
   const { kategori, sirala, q } = await searchParams;
   const sort = normalizeSort(sirala);
 
-  const [products, categories] = await Promise.all([
-    getProducts({
+  const [productsResult, categories] = await Promise.all([
+    getProductsResult({
       categorySlug: kategori || undefined,
       search: q || undefined,
       sort,
     }),
     getCategoriesWithCounts(),
   ]);
+  const { products, isDemo } = productsResult;
 
   const isFiltered = Boolean(kategori || q);
 
@@ -79,7 +79,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
           <ProductFilterBar categories={categories} />
         </Suspense>
 
-        {IS_DEMO_MODE ? (
+        {isDemo ? (
           <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
             Demo katalog — gerçek veri için <code>DATABASE_URL</code> bağla,{" "}
             <code>npm run db:migrate</code> ve <code>npm run db:seed</code>{" "}

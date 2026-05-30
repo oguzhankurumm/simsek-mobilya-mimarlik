@@ -67,8 +67,11 @@ function parseBool(value: string | undefined, fallback: boolean): boolean {
 }
 
 function parseIntOrNull(value: string | undefined): number | null {
-  if (!value) return null;
-  const n = parseInt(value, 10);
+  if (value === undefined) return null;
+  const t = value.trim();
+  // Strict: reject "12abc"/"3 adet" (parseInt would silently return 12/3).
+  if (!/^-?\d+$/.test(t)) return null;
+  const n = Number(t);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -157,7 +160,20 @@ export async function POST(req: Request) {
     }
 
     const slug = (data.slug || slugify(data.name)).trim();
-    const stock = data.stock ? parseInt(data.stock, 10) || 0 : 0;
+    // Stock drives overselling, so a malformed value is a row error — not a
+    // silent 0 (parseInt("3 adet") would have become 3).
+    let stock = 0;
+    if (data.stock !== undefined && data.stock.trim() !== "") {
+      const t = data.stock.trim();
+      if (!/^\d+$/.test(t)) {
+        errors.push({
+          row: lineNo,
+          message: `Geçersiz stok değeri: "${data.stock}"`,
+        });
+        continue;
+      }
+      stock = Number(t);
+    }
     const discountPercent =
       original > 0 ? Math.max(0, Math.round(((original - sale) / original) * 100)) : 0;
     const featured = parseBool(data.featured, false);
@@ -188,17 +204,21 @@ export async function POST(req: Request) {
         await prisma.product.update({ where: { id: existing.id }, data: payload });
         updated += 1;
       } else {
-        const product = await prisma.product.create({ data: payload });
-        if (data.imageUrl) {
-          await prisma.productImage.create({
-            data: {
-              productId: product.id,
-              url: data.imageUrl,
-              isMain: true,
-              displayOrder: 0,
-            },
-          });
-        }
+        // Product + its main image in one transaction so a failed image insert
+        // doesn't leave a product with no main image counted as "created".
+        await prisma.$transaction(async (tx) => {
+          const product = await tx.product.create({ data: payload });
+          if (data.imageUrl) {
+            await tx.productImage.create({
+              data: {
+                productId: product.id,
+                url: data.imageUrl,
+                isMain: true,
+                displayOrder: 0,
+              },
+            });
+          }
+        });
         created += 1;
       }
     } catch (err) {
