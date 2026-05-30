@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/config/site";
 import { buildOrderStatusEmail, sendEmail } from "@/lib/send-email";
+import { restoreStock } from "@/lib/order-stock";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,30 +47,35 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: true, cancelled: 0 });
   }
 
-  // Restore stock + cancel orders in a single interactive transaction.
-  // Interactive form (callback) keeps the types sane and lets us re-use
-  // the bulk updateMany at the end.
-  await prisma.$transaction(
+  // Claim each stale order's PENDING -> CANCELLED transition individually and
+  // restore its stock only when this run actually performed the cancel. Without
+  // the per-row `status: "PENDING"` guard, an order the customer cancelled (or a
+  // parallel cron invocation handled) between our findMany and this transaction
+  // would have its stock restored a second time here — permanent oversell. The
+  // returned ids are the ones we truly cancelled, so we email only those.
+  const cancelledIds = await prisma.$transaction(
     async (tx) => {
+      const claimed: string[] = [];
       for (const order of stale) {
-        for (const item of order.items) {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: { stock: { increment: item.quantity } },
-          });
-        }
+        const res = await tx.order.updateMany({
+          where: { id: order.id, status: "PENDING" },
+          data: { status: "CANCELLED" },
+        });
+        if (res.count === 0) continue;
+        await restoreStock(tx, order.items);
+        claimed.push(order.id);
       }
-      await tx.order.updateMany({
-        where: { id: { in: stale.map((o) => o.id) } },
-        data: { status: "CANCELLED" },
-      });
+      return claimed;
     },
     { timeout: 30_000 },
   );
 
+  const claimedSet = new Set(cancelledIds);
+  const cancelledOrders = stale.filter((o) => claimedSet.has(o.id));
+
   let emailsSent = 0;
   await Promise.all(
-    stale.map(async (order) => {
+    cancelledOrders.map(async (order) => {
       const recipient = order.user?.email ?? order.guestEmail ?? null;
       if (!recipient) return;
       const name = order.user?.name ?? order.guestName ?? "müşterimiz";
@@ -89,7 +95,7 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     ok: true,
-    cancelled: stale.length,
+    cancelled: cancelledOrders.length,
     emailsSent,
     threshold: threshold.toISOString(),
   });

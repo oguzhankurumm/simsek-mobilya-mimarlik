@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { AUTH_COOKIE_NAME, verifyToken } from "@/lib/auth";
+import { AUTH_COOKIE_NAME } from "@/lib/auth";
 import { SITE } from "@/config/site";
 import { buildOrderStatusEmail, sendEmail } from "@/lib/send-email";
+import { restoreStock } from "@/lib/order-stock";
+import { verifySession } from "@/lib/get-user";
 
 export const runtime = "nodejs";
 
@@ -21,7 +23,7 @@ export async function POST(
   if (!token) {
     return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   }
-  const payload = await verifyToken(token);
+  const payload = await verifySession(token);
   if (!payload) {
     return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   }
@@ -41,21 +43,29 @@ export async function POST(
     );
   }
 
-  await prisma.$transaction(
+  // Claim the PENDING -> CANCELLED transition atomically, then restore stock
+  // exactly once. A concurrent cancel (a second tab, or the cleanup cron) that
+  // loses the race gets claimed === false and must NOT restore stock again or
+  // send a second cancellation email.
+  const claimed = await prisma.$transaction(
     async (tx) => {
-      for (const item of order.items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { increment: item.quantity } },
-        });
-      }
-      await tx.order.update({
-        where: { id: order.id },
+      const res = await tx.order.updateMany({
+        where: { id: order.id, status: "PENDING" },
         data: { status: "CANCELLED" },
       });
+      if (res.count === 0) return false;
+      await restoreStock(tx, order.items);
+      return true;
     },
     { timeout: 15_000 },
   );
+
+  if (!claimed) {
+    return NextResponse.json(
+      { error: "Bu sipariş zaten iptal edilmiş." },
+      { status: 409 },
+    );
+  }
 
   // Fire status email so the cancellation is visible in the inbox.
   if (order.user?.email) {

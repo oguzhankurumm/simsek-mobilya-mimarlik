@@ -9,12 +9,14 @@ import {
   hashIdempotencyKey,
   isValidIdempotencyKey,
 } from "@/lib/idempotency";
-import { AUTH_COOKIE_NAME, verifyToken } from "@/lib/auth";
+import { AUTH_COOKIE_NAME } from "@/lib/auth";
+import { verifySession } from "@/lib/get-user";
 import { getPublicSiteSettings } from "@/lib/site-settings";
 import { sendEmail, buildOrderConfirmationEmail } from "@/lib/send-email";
 import { tlToKurus, formatPrice } from "@/lib/money";
 import { buildWhatsappUrl } from "@/lib/whatsapp";
 import { rateLimit, clientIpFromRequest } from "@/lib/rate-limit";
+import { deductStock, InsufficientStockError } from "@/lib/order-stock";
 
 // POST /api/orders
 //
@@ -60,7 +62,7 @@ function originGuard(req: Request): NextResponse | null {
 async function getUserFromCookie() {
   const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
   if (!token) return null;
-  return verifyToken(token);
+  return verifySession(token);
 }
 
 export async function POST(req: Request) {
@@ -125,6 +127,15 @@ export async function POST(req: Request) {
 
   const user = await getUserFromCookie();
 
+  // Guests must leave a name + phone so the order is trackable (by phone last-4)
+  // and fulfillable. Logged-in users carry this on their account.
+  if (!user && (!body.guestName || !body.guestPhone)) {
+    return NextResponse.json(
+      { error: "Misafir siparişi için ad ve telefon zorunludur." },
+      { status: 400 },
+    );
+  }
+
   // Fetch products from DB — server-computed totals only.
   const products = await prisma.product.findMany({
     where: { id: { in: body.items.map((i) => i.productId) }, active: true },
@@ -180,21 +191,13 @@ export async function POST(req: Request) {
     orderNumber = generateOrderNumber();
   }
 
+  const nameById = new Map(products.map((p) => [p.id, p.name]));
   try {
     const order = await prisma.$transaction(async (tx) => {
-      // Conditional stock decrement — fails the whole tx if any product runs
-      // out between our check and the actual write.
-      for (const item of body.items) {
-        const updated = await tx.product.updateMany({
-          where: { id: item.productId, stock: { gte: item.quantity } },
-          data: { stock: { decrement: item.quantity } },
-        });
-        if (updated.count === 0) {
-          const name =
-            productById.get(item.productId)?.name ?? "Ürün";
-          throw new Error(`${name} stokta kalmadı`);
-        }
-      }
+      // Conditional stock decrement — throws InsufficientStockError (rolling
+      // back the whole tx) if any product ran out between our read and this
+      // write. Shared with the cancel/admin restore paths in lib/order-stock.
+      await deductStock(tx, body.items, nameById);
 
       const created = await tx.order.create({
         data: {
@@ -274,12 +277,44 @@ export async function POST(req: Request) {
       idempotent: false,
     });
   } catch (err) {
+    // Idempotent retry that raced the unique constraint: the duplicate insert
+    // fails with P2002, so return the order the winning request created rather
+    // than a confusing 500.
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      const target = Array.isArray(err.meta?.target)
+        ? err.meta.target.join(",")
+        : String(err.meta?.target ?? "");
+      if (target.includes("idempotencyKey")) {
+        const winner = await prisma.order
+          .findUnique({ where: { idempotencyKey: idempotencyHash } })
+          .catch(() => null);
+        if (winner) {
+          return NextResponse.json({
+            orderNumber: winner.orderNumber,
+            idempotent: true,
+          });
+        }
+      }
+      if (target.includes("orderNumber")) {
+        return NextResponse.json(
+          { error: "Sipariş numarası çakışması, lütfen tekrar deneyin." },
+          { status: 409 },
+        );
+      }
+    }
+    // Out-of-stock is the one safe message we surface verbatim.
+    if (err instanceof InsufficientStockError) {
+      return NextResponse.json({ error: err.message }, { status: 409 });
+    }
+    // Everything else: log server-side, return a generic message. Never leak raw
+    // exception text (Prisma constraint names, DB internals) to the client.
     console.error("ORDER_CREATE_ERROR", err);
-    const message = err instanceof Error ? err.message : "Sunucu hatası";
-    const isStockError = message.includes("stokta");
     return NextResponse.json(
-      { error: message },
-      { status: isStockError ? 409 : 500 },
+      { error: "Sipariş oluşturulamadı. Lütfen tekrar deneyin." },
+      { status: 500 },
     );
   }
 }
