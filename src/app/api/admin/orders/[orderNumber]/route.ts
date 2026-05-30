@@ -5,6 +5,11 @@ import { getCurrentUser } from "@/lib/get-user";
 import { SITE } from "@/config/site";
 import { buildOrderStatusEmail, sendEmail } from "@/lib/send-email";
 import { logAdminAction } from "@/lib/audit-log";
+import {
+  restoreStock,
+  deductStock,
+  InsufficientStockError,
+} from "@/lib/order-stock";
 
 export const runtime = "nodejs";
 
@@ -43,7 +48,9 @@ export async function PATCH(
     .findUnique({
       where: { orderNumber },
       select: {
+        id: true,
         status: true,
+        items: { select: { productId: true, quantity: true } },
         user: { select: { email: true, name: true } },
         guestEmail: true,
         guestName: true,
@@ -55,12 +62,46 @@ export async function PATCH(
     return NextResponse.json({ error: "Sipariş bulunamadı" }, { status: 404 });
   }
 
-  const updated = await prisma.order.updateMany({
-    where: { orderNumber },
-    data: parsed.data,
-  });
-  if (updated.count === 0) {
-    return NextResponse.json({ error: "Sipariş bulunamadı" }, { status: 404 });
+  // Stock is held by every non-CANCELLED order, so the status change has to move
+  // stock: restore it on the way INTO cancelled, re-deduct on the way OUT. Do it
+  // inside one transaction with a `status: <from>` guard so two admins editing
+  // the same order can't both restore (or both deduct) its stock.
+  const from = existing.status;
+  const to = parsed.data.status;
+  try {
+    const applied = await prisma.$transaction(async (tx) => {
+      const res = await tx.order.updateMany({
+        where: { id: existing.id, status: from },
+        data: parsed.data,
+      });
+      if (res.count === 0) return "conflict" as const;
+      if (to === "CANCELLED" && from !== "CANCELLED") {
+        await restoreStock(tx, existing.items);
+      } else if (from === "CANCELLED" && to !== "CANCELLED") {
+        await deductStock(tx, existing.items);
+      }
+      return "ok" as const;
+    });
+    if (applied === "conflict") {
+      return NextResponse.json(
+        { error: "Sipariş durumu değişmiş. Sayfayı yenileyip tekrar deneyin." },
+        { status: 409 },
+      );
+    }
+  } catch (err) {
+    if (err instanceof InsufficientStockError) {
+      return NextResponse.json(
+        {
+          error: `Stok yetersiz, sipariş yeniden aktifleştirilemiyor (${err.productName}).`,
+        },
+        { status: 409 },
+      );
+    }
+    console.error("ADMIN_ORDER_PATCH_ERROR", err);
+    return NextResponse.json(
+      { error: "Sipariş güncellenemedi" },
+      { status: 500 },
+    );
   }
 
   await logAdminAction({
