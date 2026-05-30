@@ -191,11 +191,16 @@ export function CommandPalette() {
             ) : null}
 
             {results.customers.length > 0 ? (
-              <Command.Group heading="Müşteriler" className="text-xs text-zinc-500">
+              <Command.Group
+                heading="Müşteriler"
+                className="text-xs text-zinc-500"
+              >
                 {results.customers.map((c) => (
                   <Command.Item
                     key={c.id}
-                    onSelect={() => go(`/admin/dashboard/customers`)}
+                    onSelect={() =>
+                      go(`/admin/dashboard/customers/${c.id}`)
+                    }
                     className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm aria-selected:bg-zinc-100 dark:aria-selected:bg-zinc-800"
                   >
                     <Users className="h-4 w-4 text-zinc-500" />
