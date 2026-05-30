@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/get-user";
+import { tlToKurus } from "@/lib/money";
 
 export const runtime = "nodejs";
 
@@ -41,8 +42,10 @@ export async function GET() {
         slug: row.product.slug,
         brand: row.product.brand,
         categoryName: row.product.category.name,
-        salePriceTl: row.product.salePrice.toString(),
-        originalPriceTl: row.product.originalPrice.toString(),
+        // Integer kuruş, matching PublicProduct everywhere else (was raw
+        // Decimal TL strings — the one place that broke the money contract).
+        salePriceKurus: tlToKurus(row.product.salePrice.toString()),
+        originalPriceKurus: tlToKurus(row.product.originalPrice.toString()),
         stock: row.product.stock,
         image: row.product.images[0]?.url ?? "",
       },
