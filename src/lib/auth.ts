@@ -16,6 +16,10 @@ const BCRYPT_ROUNDS = 12;
 export type TokenPayload = {
   userId: string;
   role: "CUSTOMER" | "ADMIN";
+  // Session id this token is bound to. Lets logout / password-reset revoke the
+  // token server-side (see verifySession in get-user.ts). Optional so tokens
+  // minted before session-binding still verify on signature until they expire.
+  sid?: string;
 };
 
 function getJwtSecret(): Uint8Array {
@@ -50,7 +54,11 @@ export async function verifyToken(
     ) {
       return null;
     }
-    return { userId: payload.userId, role: payload.role };
+    return {
+      userId: payload.userId,
+      role: payload.role,
+      sid: typeof payload.sid === "string" ? payload.sid : undefined,
+    };
   } catch {
     return null;
   }

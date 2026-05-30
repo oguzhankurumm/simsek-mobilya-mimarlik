@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   AUTH_COOKIE_NAME,
@@ -48,7 +49,11 @@ export async function POST(req: Request) {
   const { email, password, name, phone } = parsed.data;
   const phoneE164 = phone ? normalizeE164(phone) : null;
 
-  // Hide existence — return same message whether email is taken or not.
+  // Registration necessarily reveals whether an email is already in use (409
+  // here vs. success otherwise) — the same as most sites, since hiding it would
+  // send a confusing "check your inbox" to someone who already has an account.
+  // The per-IP rate limit above throttles bulk enumeration. Login and forgot DO
+  // hide existence (uniform responses); registration is the deliberate exception.
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     return NextResponse.json(
@@ -58,15 +63,43 @@ export async function POST(req: Request) {
   }
 
   const passwordHash = await hashPassword(password);
-  const user = await prisma.user.create({
-    data: {
-      email,
-      name,
-      phone: phoneE164,
-      passwordHash,
-      role: "CUSTOMER",
-    },
-  });
+  let user;
+  try {
+    user = await prisma.user.create({
+      data: {
+        email,
+        name,
+        phone: phoneE164,
+        passwordHash,
+        role: "CUSTOMER",
+      },
+    });
+  } catch (err) {
+    // Unique violation on email or phone — including the TOCTOU race past the
+    // findUnique check above, or a phone already tied to another account.
+    // Friendly 409, not a raw 500.
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      const target = Array.isArray(err.meta?.target)
+        ? err.meta.target.join(",")
+        : String(err.meta?.target ?? "");
+      return NextResponse.json(
+        {
+          error: target.includes("phone")
+            ? "Bu telefon numarası zaten kayıtlı."
+            : "Bu e-posta ile zaten kayıt var",
+        },
+        { status: 409 },
+      );
+    }
+    console.error("REGISTER_ERROR", err);
+    return NextResponse.json(
+      { error: "Kayıt oluşturulamadı. Lütfen tekrar deneyin." },
+      { status: 500 },
+    );
+  }
 
   // Issue session: random token in cookie, sha256 hash in DB.
   const rawToken = generateSessionToken();
@@ -74,12 +107,13 @@ export async function POST(req: Request) {
   const expiresAt = new Date(
     Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000,
   );
-  await prisma.session.create({
+  const session = await prisma.session.create({
     data: { userId: user.id, tokenHash, expiresAt },
   });
 
+  // Bind the JWT to this session row so logout / password-reset can revoke it.
   const jwt = await signToken(
-    { userId: user.id, role: "CUSTOMER" },
+    { userId: user.id, role: "CUSTOMER", sid: session.id },
     SESSION_TTL_DAYS,
   );
   (await cookies()).set(AUTH_COOKIE_NAME, jwt, {
