@@ -72,7 +72,7 @@ export async function POST(req: Request) {
   // 30 orders per hour per IP is generous for a household ordering multiple
   // items but cuts off bot-driven stock-grabbing attempts.
   const ip = clientIpFromRequest(req);
-  const ipLimit = rateLimit(`orders:ip:${ip}`, 30, 60 * 60 * 1000);
+  const ipLimit = await rateLimit(`orders:ip:${ip}`, 30, 60 * 60 * 1000);
   if (!ipLimit.allowed) {
     return NextResponse.json(
       { error: "Çok fazla sipariş denemesi. Lütfen birkaç dakika bekleyin." },

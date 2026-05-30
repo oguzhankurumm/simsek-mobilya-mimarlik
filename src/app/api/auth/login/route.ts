@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   // 20 attempts per 15 minutes per IP defeats credential-stuffing without
   // blocking real users on shared NATs.
   const ip = clientIpFromRequest(req);
-  const ipLimit = rateLimit(`login:ip:${ip}`, 20, FIFTEEN_MIN_MS);
+  const ipLimit = await rateLimit(`login:ip:${ip}`, 20, FIFTEEN_MIN_MS);
   if (!ipLimit.allowed) {
     return NextResponse.json(
       { error: "Çok fazla deneme. Lütfen birkaç dakika bekleyin." },
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   // entirely. Successful login doesn't bypass this — the bucket counts
   // every attempt, which is fine because a real user logs in once per
   // session.
-  const emailLimit = rateLimit(
+  const emailLimit = await rateLimit(
     `login:email:${email.toLowerCase()}`,
     10,
     FIFTEEN_MIN_MS,
